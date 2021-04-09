@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+task-flyway() {
+    stage=$1
+
+    if [[ $stage != "dev" && $stage != "prod" ]]; then
+        echo "Usage: kar flyway <stage> command ... "
+        exit 1
+    elif [[ $stage == "dev" ]]; then
+        dbname=devarticlerecdb
+    elif [[ $stage == "prod" ]]; then
+        dbname=articlerecdb
+        echo "WARNING: running on prod!!!"
+    fi
+
+    shift 1
+
+    user=$(ssm get /$stage/database/user)
+    host=$(ssm get /$stage/database/host)
+    password=$(ssm get /$stage/database/password)
+    jdbc_uri="jdbc:postgresql://$host/$dbname?user=$user&password=$password"
+    flyway -url=$jdbc_uri -locations="filesystem:$(pwd)/migrations" $@
+}
