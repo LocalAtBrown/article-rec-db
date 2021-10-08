@@ -3,22 +3,31 @@
 This repository stores the article rec db migrations that are controlled via flyway.
 
 
-## Usage
+## Installing Dependencies
+```
+brew update && brew bundle
+```
+
+## Connecting to the DB
+
+```
+kar connect dev
+```
+
+## Applying Migrations
 
 ```
 kar flyway <stage> <cmd>
 ```
 
-**Info**
+**List Migrations**
 
 ```
 kar flyway dev info
 ```
 
-**Migrate**
+**Run Migrations**
 
 ```
 kar flyway dev migrate
 ```
-
-
