@@ -27,7 +27,7 @@ task-connect() {
     stage=$1
 
     if [[ $stage != "dev" && $stage != "prod" ]]; then
-        echo "Usage: kar flyway <stage> command ... "
+        echo "Usage: kar connect <stage> ... "
         exit 1
     elif [[ $stage == "dev" ]]; then
         db_uri=$(ssm get /dev/database/uri)
