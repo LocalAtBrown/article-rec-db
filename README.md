@@ -9,6 +9,7 @@ brew update && brew bundle
 ```
 
 ## Connecting to the DB
+**Start Interactive PostgreSQL Session**
 
 ```
 kar connect dev
