@@ -6,8 +6,8 @@ CREATE TABLE path (
   id SERIAL PRIMARY KEY,
   path TEXT NOT NULL,
   site TEXT NOT NULL DEFAULT '',
-  external_id TEXT DEFAULT NULL,
-  exclude_reason TEXT DEFAULT NULL,
+  external_id TEXT DEFAULT '',
+  exclude_reason TEXT DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
