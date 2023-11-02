@@ -52,4 +52,4 @@ profile = "black"
 strict = "True"
 implicit_reexport = "True"
 files = "."
-exclude = ['\.venv', 'tests']
+exclude = ['\.venv', 'tests', 'alembic']
