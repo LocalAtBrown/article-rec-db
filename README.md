@@ -1,3 +1,5 @@
+_This branch houses the effort to move our DB code to a SQLAlchemy-based stack and is under active development in parallel with the move to Google Analytics 4. For the current production code, see the `main` branch._
+
 # article-rec-db
 
 <!-- [![Release](https://img.shields.io/github/v/release/LocalAtBrown/article-rec-db)](https://img.shields.io/github/v/release/LocalAtBrown/article-rec-db) -->
