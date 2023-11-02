@@ -27,3 +27,29 @@ pytest-order = "^1.1.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+include = '\.pyi?$'
+line-length = 122
+exclude = '''
+(
+  /(                        # exclude a few common directories in the
+    \.git                   # root of the project
+    | \.pytest_cache
+    | python-venv
+    | \.venv
+    | build
+    | dist
+    | \.tox
+  ))
+'''
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+# use the strict option since this a new project
+strict = "True"
+implicit_reexport = "True"
+files = "."
+exclude = ['\.venv', 'tests']

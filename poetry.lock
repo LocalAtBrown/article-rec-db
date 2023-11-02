@@ -438,20 +438,20 @@ crt = ["awscrt (==0.16.26)"]
 
 [[package]]
 name = "botocore-stubs"
-version = "1.31.75"
+version = "1.31.76"
 description = "Type annotations and code completion for botocore"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "botocore_stubs-1.31.75-py3-none-any.whl", hash = "sha256:dbbe7cc704dc499cbdfcb08e4e5f2d6a1c72181a7b972f33f97c2706ce9f9522"},
-    {file = "botocore_stubs-1.31.75.tar.gz", hash = "sha256:fcf308dc9a913783b73e6749e3a50cd5f4249767d029908c236717d88c7b7cf1"},
+    {file = "botocore_stubs-1.31.76-py3-none-any.whl", hash = "sha256:9fd9447a28642efa35a1c5590fc35132cf0173cd12055ba9044511cb6b24dd6f"},
+    {file = "botocore_stubs-1.31.76.tar.gz", hash = "sha256:778c6e014ae1103d546d59dffb000b0a659c9b9bbfa11050ff4a62c5adeec3a4"},
 ]
 
 [package.dependencies]
 types-awscrt = "*"
 
 [package.extras]
-botocore = ["botocore (==1.31.75)"]
+botocore = ["botocore (==1.31.76)"]
 
 [[package]]
 name = "cfgv"
@@ -1112,13 +1112,13 @@ sqlalchemy2-stubs = "*"
 
 [[package]]
 name = "types-awscrt"
-version = "0.19.7"
+version = "0.19.8"
 description = "Type annotations and code completion for awscrt"
 optional = false
 python-versions = ">=3.7,<4.0"
 files = [
-    {file = "types_awscrt-0.19.7-py3-none-any.whl", hash = "sha256:230b06479eaf37488ce9d536b0c4a34a5b1525d0a0a09964f2c29617bee87da5"},
-    {file = "types_awscrt-0.19.7.tar.gz", hash = "sha256:3a4a8a5829f0a4d806476bd94c4a7e231a561879fac4fe044705acc44b212a64"},
+    {file = "types_awscrt-0.19.8-py3-none-any.whl", hash = "sha256:4eb4f3bd0c41a2710cacda13098374da9faa76c5a0fb901aa5659e0fd48ceda1"},
+    {file = "types_awscrt-0.19.8.tar.gz", hash = "sha256:a2d534b7017c3476ee69a44bd8aeaf3b588c42baa8322473d100a45ee67510d7"},
 ]
 
 [[package]]
