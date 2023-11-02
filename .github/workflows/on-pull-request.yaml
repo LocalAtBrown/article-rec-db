@@ -1,0 +1,46 @@
+name: run checks
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "**.py"
+
+jobs:
+  run-checks:
+    runs-on: ubuntu-latest
+    # services:
+    #   # Label used to access the service container
+    #   postgres:
+    #     # Docker Hub image
+    #     image: postgres
+    #     # Provide the password for postgres
+    #     env:
+    #       POSTGRES_PASSWORD: postgres
+    #       POSTGRES_DB: postgres
+    #     # Set health checks to wait until postgres has started
+    #     options: >-
+    #       --health-cmd pg_isready
+    #       --health-interval 10s
+    #       --health-timeout 5s
+    #       --health-retries 5
+    #     ports:
+    #       # Maps tcp port 5432 on service container to the host
+    #       - 5432:5432
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          # change this python version if the python version is changed in pyproject.toml and the Dockerfile
+          python-version: "3.11.1"
+      - name: Set up Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: 1.5.1
+      - name: Install dependencies
+        run: poetry config virtualenvs.create false && poetry install --no-interaction
+      - name: run mypy
+        run: mypy
+    #   - name: run tests
+    #     run: DB_NAME=postgres pytest tests
