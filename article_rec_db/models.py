@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from enum import StrEnum
 from typing import Optional
+from uuid import UUID, uuid4
 
 from pydantic import validator
 from sqlmodel import Field, SQLModel
@@ -24,10 +25,10 @@ class TimestampTrackedModel(SQLModel):
     db_updated_at: Optional[datetime] = None
 
 
-class Path(TimestampTrackedModel, table=True):
+class Page(TimestampTrackedModel, table=True):
+    id: UUID = Field(default_factory=uuid4, unique=True)
     site: SiteName = Field(primary_key=True)
-    id_site: str = Field(primary_key=True)
-    path: str
+    path: str = Field(primary_key=True)
     article_exclude_reason: Optional[ArticleExcludeReason] = None
 
     @validator("path")
@@ -37,7 +38,7 @@ class Path(TimestampTrackedModel, table=True):
 
 
 class Article(SQLModel, table=True):
-    site: SiteName = Field(primary_key=True, foreign_key="path.site")
-    id_site: str = Field(primary_key=True, foreign_key="path.id_site")
+    id: UUID = Field(primary_key=True, foreign_key="page.id")
+    id_in_site: str  # ID of article in the partner site's internal system
     title: str
     published_at: datetime
