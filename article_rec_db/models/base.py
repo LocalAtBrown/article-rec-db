@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Optional
+from typing import Annotated
 
 from sqlmodel import Field, SQLModel
 
 
-class TimestampTrackedModel(SQLModel):
-    db_created_at: datetime = Field(default_factory=datetime.utcnow, allow_mutation=False)
-    db_updated_at: Optional[datetime] = None
+class TimestampTrackedModel(SQLModel, table=False):
+    db_created_at: Annotated[datetime, Field(default_factory=datetime.utcnow)]
+    db_updated_at: datetime | None = None

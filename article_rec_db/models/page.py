@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Annotated
 from uuid import UUID, uuid4
 
 from pydantic import validator
@@ -14,10 +14,10 @@ PATTERN_URLPATH = re.compile(r"^(?P<path>/[^\s?#]*)?$")
 
 
 class Page(TimestampTrackedModel, table=True):
-    id: UUID = Field(default_factory=uuid4, unique=True)
-    site: SiteName = Field(primary_key=True)
-    path: str = Field(primary_key=True)
-    article_exclude_reason: Optional[ArticleExcludeReason] = None
+    id: Annotated[UUID, Field(default_factory=uuid4, unique=True)]
+    site: Annotated[SiteName, Field(primary_key=True)]
+    path: Annotated[str, Field(primary_key=True)]
+    article_exclude_reason: ArticleExcludeReason | None = None
 
     @validator("path")
     def path_must_be_valid(cls, value: str) -> str:
