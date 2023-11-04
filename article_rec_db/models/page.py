@@ -7,7 +7,8 @@ from sqlmodel import Field
 
 from article_rec_db.sites import SiteName
 
-from .helpers import ArticleExcludeReason, TimestampTrackedModel
+from .base import TimestampTrackedModel
+from .helpers import ArticleExcludeReason
 
 PATTERN_URLPATH = re.compile(r"^(?P<path>/[^\s?#]*)?$")
 

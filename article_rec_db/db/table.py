@@ -1,8 +1,9 @@
 from sqlalchemy.future.engine import create_engine
 
+from article_rec_db.models import SQLModel
+
 from .database import create_database, get_conn_string
 from .helpers import Component, Stage
-from .models import SQLModel
 from .role import (
     assign_role,
     create_role,

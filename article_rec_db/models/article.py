@@ -1,7 +1,9 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
+
+from .base import SQLModel
 
 
 class Article(SQLModel, table=True):
