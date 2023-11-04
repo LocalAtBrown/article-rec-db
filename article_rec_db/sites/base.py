@@ -1,14 +1,10 @@
 import re
-from enum import StrEnum
 
 from pydantic import BaseModel, validator
 
+from .helpers import SiteName
+
 PATTERN_SITE_NAME_KEBAB = re.compile(r"^[a-z]+(-[a-z]+)*$")
-
-
-class SiteName(StrEnum):
-    AFRO_LA = "afro-la"
-    DALLAS_FREE_PRESS = "dallas-free-press"
 
 
 class Site(BaseModel):
