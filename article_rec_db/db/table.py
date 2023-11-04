@@ -1,6 +1,7 @@
-from sqlalchemy.future.engine import create_engine
+from builtins import type
 
-from article_rec_db.models import SQLModel
+from sqlalchemy.future.engine import create_engine
+from sqlmodel import SQLModel
 
 from .database import create_database, get_conn_string
 from .helpers import Component, Stage
@@ -30,9 +31,9 @@ def pre_table_initialization(
         conn.commit()
 
 
-def initialize_tables(stage: Stage) -> None:
+def initialize_tables(stage: Stage, sqlmodel_class: type[SQLModel]) -> None:
     engine = create_engine(get_conn_string(db_name=stage))
-    SQLModel.metadata.create_all(engine)
+    sqlmodel_class.metadata.create_all(engine)
 
 
 def post_table_initialization(stage: Stage, components: list[Component]) -> None:
