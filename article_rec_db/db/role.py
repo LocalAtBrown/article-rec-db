@@ -5,7 +5,7 @@ import random
 from sqlalchemy.future.engine import Connection
 from sqlmodel import text
 
-from article_rec_db.db.helpers import (
+from .helpers import (
     Component,
     DatabaseConnectionCredentials,
     Privilege,

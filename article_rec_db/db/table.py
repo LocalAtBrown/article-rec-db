@@ -1,15 +1,15 @@
 from sqlalchemy.future.engine import create_engine
 
-from article_rec_db.db.database import create_database, get_conn_string
-from article_rec_db.db.helpers import Component, Stage
-from article_rec_db.db.role import (
+from .database import create_database, get_conn_string
+from .helpers import Component, Stage
+from .models import SQLModel
+from .role import (
     assign_role,
     create_role,
     create_users,
     enable_row_level_security,
     grant_privileges,
 )
-from article_rec_db.models import SQLModel
 
 
 def pre_table_initialization(

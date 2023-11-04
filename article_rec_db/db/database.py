@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy.future.engine import Connection
 from sqlmodel import text
 
-from article_rec_db.db.helpers import Stage
+from .helpers import Stage
 
 
 def create_database(conn: Connection, db_name: Stage) -> None:
