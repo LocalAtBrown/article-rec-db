@@ -30,7 +30,6 @@ def components() -> list[Component]:
         ],
         policies=[
             RowLevelSecurityPolicy(table="article", user_column="site"),
-            # RowLevelSecurityPolicy(table="article", user_column="site"),
         ],
     )
     return [training_job]
