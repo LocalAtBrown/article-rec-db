@@ -46,7 +46,7 @@ def stage() -> Stage:
 
 
 @pytest.mark.order(1)
-def test_pre_table_initialization(components: list[Component], site_names: list[str], stage: Stage) -> None:
+def test_pre_table_initialization(components, site_names, stage):
     # run function
     pre_table_initialization(stage=stage, components=components, site_names=site_names)
 
@@ -93,7 +93,7 @@ def test_pre_table_initialization(components: list[Component], site_names: list[
 
 
 @pytest.mark.order(2)
-def test_initialize_tables(stage: Stage) -> None:
+def test_initialize_tables(stage):
     # needs pre_table_init to have run
     initialize_tables(stage, SQLModel)
     # check to see if expected tables exist
@@ -109,7 +109,7 @@ def test_initialize_tables(stage: Stage) -> None:
 
 
 @pytest.mark.order(3)
-def test_post_table_initialization(components: list[Component], site_names: list[str], stage: Stage):
+def test_post_table_initialization(components, site_names, stage):
     # needs pre_table_init and table creation to have run
     post_table_initialization(stage=stage, components=components)
 

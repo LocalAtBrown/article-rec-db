@@ -1,5 +1,7 @@
+import os
 from typing import Type
 
+from loguru import logger
 from sqlmodel import SQLModel
 
 from article_rec_db.db.controller import (
@@ -51,3 +53,5 @@ if __name__ == "__main__":
         initialize_all_database_entities(
             stage=stage, components=components, site_names=site_names, sqlmodel_class=ArticleRecDbSQLModel
         )
+
+    logger.info(f"{os.path.relpath(__file__)} done!")
