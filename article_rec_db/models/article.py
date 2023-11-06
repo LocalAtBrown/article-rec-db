@@ -2,11 +2,12 @@ from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
-from sqlmodel import Column, Field, String, UniqueConstraint
+from sqlmodel import Column, Field, Relationship, String, UniqueConstraint
 
 from article_rec_db.sites import SiteName
 
 from .base import TimestampTrackedModel
+from .page import Page
 
 
 class Article(TimestampTrackedModel, table=True):
@@ -17,3 +18,6 @@ class Article(TimestampTrackedModel, table=True):
     id_in_site: str  # ID of article in the partner site's internal system
     title: str
     published_at: datetime
+
+    # An article is always a page, but a page is not always an article
+    page: Page = Relationship(back_populates="article")
