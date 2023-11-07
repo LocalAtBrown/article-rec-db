@@ -52,15 +52,15 @@ def test_add_page_is_article(create_and_drop_tables, engine):
         article_exclude_reason=None,
     )
     article_published_at = datetime.now()
+    article = Article(
+        site=DALLAS_FREE_PRESS.name,
+        id_in_site="1234",
+        title="Example Article",
+        published_at=article_published_at,
+        page=page,
+    )
+
     with Session(engine) as session:
-        article = Article(
-            session=session,
-            site=DALLAS_FREE_PRESS.name,
-            id_in_site="1234",
-            title="Example Article",
-            published_at=article_published_at,
-            page=page,
-        )
         session.add(article)
         session.commit()
         session.refresh(article)
@@ -109,15 +109,15 @@ def test_add_pages_duplicate_url(create_and_drop_tables, engine):
 
 @pytest.mark.order(7)
 def test_add_article_without_page(create_and_drop_tables, engine):
+    article = Article(
+        page_id=uuid4(),
+        site=DALLAS_FREE_PRESS.name,
+        id_in_site="2345",
+        title="Example Article",
+        published_at=datetime.now(),
+    )
+
     with Session(engine) as session:
-        article = Article(
-            session=session,
-            page_id=uuid4(),
-            site=DALLAS_FREE_PRESS.name,
-            id_in_site="2345",
-            title="Example Article",
-            published_at=datetime.now(),
-        )
         session.add(article)
 
         # Since there's no page to refer to, adding an standalone article must fail
