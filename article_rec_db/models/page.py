@@ -1,4 +1,4 @@
-from typing import Annotated, Optional
+from typing import Annotated
 from uuid import UUID, uuid4
 
 from pydantic import HttpUrl
@@ -14,4 +14,5 @@ class Page(TimestampTrackedModel, table=True):
     article_exclude_reason: ArticleExcludeReason | None = None
 
     # An article is always a page, but a page is not always an article
-    article: Optional["Article"] = Relationship(back_populates="page")
+    # Techinically SQLModel considers Page the "many" in the many-to-one relationship, so this list will only ever have at most one element
+    article: list["Article"] = Relationship(back_populates="page")
