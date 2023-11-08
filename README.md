@@ -22,7 +22,7 @@ We use [SQLModel](https://sqlmodel.tiangolo.com/), a layer on top of SQLAlchemy 
 This is useful because we can import this package to interact with the tables AND have Pydantic objects in Python
 that correspond to a row in the table.
 
-To install the package from PyPi, run: `pip install lnl-article-rec-db`. Check existing versions
+To install the package from PyPi, run: `pip install article-rec-db`. Check existing versions
 [here](https://pypi.org/project/article-rec-db/).
 
 ### Initialize a new cluster
@@ -32,11 +32,13 @@ If the target cluster has IP restrictions, make sure your IP address is a valid 
 
 An example run with fake credentials (from the root dir of this project with the virtual env
 activated):
-`HOST=fakehost USER=fakeuser PASSWORD=fakepw DB_NAME=postgres python article_rec_db/db_init_stages/_0_init_db.py`
+`HOST=fakehost USER=fakeuser PASSWORD=fakepw DB_NAME=postgres python db_init_steps/_0_init_db.py`
+
+(If you run into a `ModuleNotFoundError`, try including `PYTHONPATH=$(pwd)` before the `python` command. This applies to any other commands that uses `python`.)
 
 This should run the most up-to-date SQLModel definitions of the tables, which means you are
 safe to then run any additional changes in role, access, and policy changes. So you can
-run the rest of the steps in `db_init_stages`, one after the other in ascending numerical order.
+run the rest of the steps in `db_init_steps`, one after the other in ascending numerical order.
 
 No `PORT` is passed because the default port is 5432, the standard for Postgres.
 
