@@ -1,5 +1,5 @@
 [tool.poetry]
-description = "Database models and imgrations for the Local News Lab's article recommendation system"
+description = "Database models and migrations for the Local News Lab's article recommendation system"
 name = "article-rec-db"
 version = "0.0.1"
 authors = ["Duy Nguyen <hello.duyknguyen@gmail.com>"]

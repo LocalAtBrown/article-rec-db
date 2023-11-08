@@ -115,10 +115,10 @@ is to run a Docker container, then run the tests while it is active.
 3. Run `DB_NAME=postgres pytest tests` from the root directory of the project. Explore the `pytest` docs (linked above)
    to see more options.
 
-Steps 2 and 3 can be combined into one Poe task: `poe test`, which also stops the container after the tests are done, even if tests fail. In addition, you can also run `poe lclstart` to just start the container, and `poe lclstop` to stop it whenever you're done. `poe lclconnect` will connect you to the container via `psql` so you can poke around.
-
 Note that if you decide to run the Postgres container with different credentials (a different password, port, etc.) or
 via a different method, you will likely need to update the test file to point to the correct Postgres instance.
 
 Additionally, if you want to re-run the tests, you want to make sure you start over from a fresh Postgres
 instance. If you run Postgres via Docker, you can simply `ctrl-C` to stop the image and start a new one.
+
+Steps 2 and 3 can be combined into one Poe task: `poe test`, which also stops the container after the tests are done, even if tests fail. In addition, you can also run `poe lclstart` to just start the container, and `poe lclstop` to stop it whenever you're done. `poe lclconnect` will connect you to the container via `psql` so you can poke around.
