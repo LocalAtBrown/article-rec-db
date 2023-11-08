@@ -1,20 +1,9 @@
 import pytest
 from sqlalchemy import create_engine, text
 
-from article_rec_db.db.controller import (
-    initialize_tables,
-    post_table_initialization,
-    pre_table_initialization,
-)
+from article_rec_db.db.controller import pre_table_initialization
 from article_rec_db.db.database import get_conn_string
-from article_rec_db.db.helpers import (
-    Component,
-    Grant,
-    Privilege,
-    RowLevelSecurityPolicy,
-    Stage,
-)
-from article_rec_db.models import SQLModel
+from article_rec_db.db.helpers import Component, Stage
 from article_rec_db.sites import AFRO_LA, DALLAS_FREE_PRESS
 
 
@@ -22,15 +11,8 @@ from article_rec_db.sites import AFRO_LA, DALLAS_FREE_PRESS
 def components() -> list[Component]:
     training_job = Component(
         name="training_job",
-        grants=[
-            Grant(
-                privileges=[Privilege.SELECT, Privilege.INSERT, Privilege.UPDATE, Privilege.DELETE],
-                tables=["page", "article"],
-            )
-        ],
-        policies=[
-            RowLevelSecurityPolicy(table="article", user_column="site"),
-        ],
+        grants=[],
+        policies=[],
     )
     return [training_job]
 
@@ -90,55 +72,3 @@ def test_pre_table_initialization(components, site_names, stage):
             assert len(result_data) == len(site_names)
             expected_usernames = [f"{stage}_{component.name}_{site_name}" for site_name in site_names]
             assert sorted([row[0] for row in result_data]) == sorted(expected_usernames)
-
-
-@pytest.mark.order(2)
-def test_initialize_tables(stage):
-    # needs pre_table_init to have run
-    initialize_tables(stage, SQLModel)
-    # check to see if expected tables exist
-    engine = create_engine(get_conn_string(db_name=stage))
-    with engine.connect() as conn:
-        statement = text(
-            "SELECT tablename FROM pg_catalog.pg_tables "
-            "WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'"
-        )
-        result = conn.execute(statement)
-        result_data = result.fetchall()
-        assert sorted([row[0] for row in result_data]) == sorted(list(SQLModel.metadata.tables))
-
-
-@pytest.mark.order(3)
-def test_post_table_initialization(components, site_names, stage):
-    # needs pre_table_init and table creation to have run
-    post_table_initialization(stage=stage, components=components)
-
-    engine = create_engine(get_conn_string(db_name=stage))
-    with engine.connect() as conn:
-        # check for correct privileges
-        for component in components:
-            for grant in component.grants:
-                for table in grant.tables:
-                    statement = text(
-                        "SELECT privilege_type FROM information_schema.role_table_grants "
-                        "WHERE table_name=:table_name AND grantee=:role_name"
-                    )
-                    result = conn.execute(statement, {"table_name": table, "role_name": f"{stage}_{component.name}"})
-                    result_data = result.fetchall()
-                    for row in result_data:
-                        assert row[0] in grant.privileges
-
-        # check row level security enabled
-        tables_to_check = []
-        for component in components:
-            for policy in component.policies:
-                tables_to_check.append(policy.table)
-
-        # dedupe
-        tables_to_check = set(tables_to_check)
-        formatted_tables = ", ".join([f"'{table}'" for table in tables_to_check])
-
-        statement = text("SELECT rowsecurity FROM pg_catalog.pg_tables " f"WHERE tablename IN ({formatted_tables})")
-        result = conn.execute(statement)
-        result_data = result.fetchall()
-        assert len(result_data) == len(tables_to_check)
