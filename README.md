@@ -56,6 +56,8 @@ To generate a new revision after you've updated the models:
 3. Run this from the root of the project: `DB_CONNECTION_STRING='postgresql://user:password@host:port/db_name' alembic upgrade head`
 4. Note that you only need to generate the revision file (step 1) _once_ because we want the same content in each environment's database, but you do need to run the `upgrade head` command once _for each_ database (change the DB_NAME to the desired target). (There's a Poe task for this: run `poe rmtupgrade -d db_name`)
 
+If you decide to do Step 1 or 4 with Poe, make sure to include the `DB_CREDENTIALS_SSM_PARAM` env var set to the name of the AWS SSM parameter that stores the credentials for the database, either inline or in a top-level `.env` file. Make sure the AWS CLI and `jq` command-line package are installed.
+
 To make new users, grant privileges, etc., follow the patterns used in db_init_stages along with the
 helpers under article_rec_db.
 
