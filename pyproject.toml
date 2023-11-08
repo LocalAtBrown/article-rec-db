@@ -1,6 +1,6 @@
 [tool.poetry]
 description = "Database models and imgrations for the Local News Lab's article recommendation system"
-name = "lnl-article-rec-db"
+name = "article-rec-db"
 version = "0.0.1"
 authors = ["Duy Nguyen <hello.duyknguyen@gmail.com>"]
 license = "MIT"
@@ -15,6 +15,10 @@ python = "^3.11"
 boto3 = "^1.28.76"
 boto3-stubs = { version = "^1.28.76", extras = ["ssm"] }
 sqlmodel = "^0.0.11"
+pydantic = "^1.10.13"
+sqlalchemy = "^1.4.36"
+psycopg2 = "^2.9.9"
+loguru = "^0.7.2"
 
 [tool.poetry.group.dev.dependencies]
 alembic = "^1.12.1"
@@ -22,7 +26,12 @@ mypy = "^1.6.1"
 pre-commit = "^3.5.0"
 pytest = "^7.4.3"
 pytest-order = "^1.1.0"
+poethepoet = "^0.24.2"
 
+[tool.poe.tasks.test]
+help = "Run the test suite"
+sequence = ["lclstart", "_lclwait", "_pytest", "lclstop"]
+ignore_fail = "return_non_zero"
 
 [build-system]
 requires = ["poetry-core"]
@@ -53,3 +62,30 @@ strict = "True"
 implicit_reexport = "True"
 files = "."
 exclude = ['\.venv', 'tests', 'alembic']
+
+# Poe task definitions
+[tool.poe.tasks.lclstart]
+help = "Start a local postgres container in the background"
+shell = "docker run -d --rm --name postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_HOST_AUTH_METHOD=trust -p 127.0.0.1:5432:5432/tcp postgres"
+
+[tool.poe.tasks.lclstop]
+help = "Stop the local postgres container running in the background"
+shell = "docker stop postgres"
+
+[tool.poe.tasks._lclwait]
+help = "Wait for the local postgres container to be ready, since docker run returns before postgres is actually ready"
+env = { SLEEP_SECONDS = "2" }
+shell = """
+until timeout 3 psql -h 127.0.0.1 -U postgres -c "select 1" -d postgres 2>&0>/dev/null
+do
+  printf "Waiting %s seconds for PostgreSQL to come up: %s@%s/%s...\n" $SLEEP_SECONDS postgres 127.0.0.1 postgres
+  sleep $SLEEP_SECONDS;
+done
+"""
+
+[tool.poe.tasks._pytest]
+cmd = "pytest tests"
+
+[tool.poe.tasks.lclconnect]
+help = "Connect to the local postgres database"
+cmd = "psql -h 127.0.0.1 -U postgres -d postgres"
