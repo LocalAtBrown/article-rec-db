@@ -1,14 +1,8 @@
 import os
-from typing import Type
 
 from loguru import logger
-from sqlmodel import SQLModel
 
-from article_rec_db.db.controller import (
-    initialize_tables,
-    post_table_initialization,
-    pre_table_initialization,
-)
+from article_rec_db.db.controller import initialize_tables, post_table_initialization
 from article_rec_db.db.helpers import (
     Component,
     Grant,
@@ -16,20 +10,8 @@ from article_rec_db.db.helpers import (
     RowLevelSecurityPolicy,
     Stage,
 )
-from article_rec_db.models import SQLModel as ArticleRecDbSQLModel
+from article_rec_db.models import SQLModel
 from article_rec_db.sites import AFRO_LA, DALLAS_FREE_PRESS
-
-
-def initialize_all_database_entities(
-    stage: Stage, components: list[Component], site_names: list[str], sqlmodel_class: Type[SQLModel]
-) -> None:
-    # needs default db
-    pre_table_initialization(stage=stage, components=components, site_names=site_names)
-    # needs to connect to this stage's db
-    initialize_tables(stage=stage, sqlmodel_class=sqlmodel_class)
-    # needs this stage's db
-    post_table_initialization(stage=stage, components=components)
-
 
 if __name__ == "__main__":
     stages = [Stage.DEV, Stage.PROD]
@@ -50,8 +32,9 @@ if __name__ == "__main__":
     # users are dev-pipeline0-afro-la, dev-pipeline0-dallas-free-press, ... , prod-pipeline0-the-19th
 
     for stage in stages:
-        initialize_all_database_entities(
-            stage=stage, components=components, site_names=site_names, sqlmodel_class=ArticleRecDbSQLModel
-        )
+        # needs to connect to this stage's db
+        initialize_tables(stage=stage, sqlmodel_class=SQLModel)
+        # needs this stage's db
+        post_table_initialization(stage=stage, components=components)
 
     logger.info(f"{os.path.relpath(__file__)} done!")
