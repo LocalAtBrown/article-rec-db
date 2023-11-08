@@ -15,4 +15,4 @@ class Page(TimestampTrackedModel, table=True):
 
     # An article is always a page, but a page is not always an article
     # Techinically SQLModel considers Page the "many" in the many-to-one relationship, so this list will only ever have at most one element
-    article: list["Article"] = Relationship(back_populates="page")
+    article: list["Article"] = Relationship(back_populates="page")  # type: ignore
