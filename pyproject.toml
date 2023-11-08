@@ -64,6 +64,13 @@ files = "."
 exclude = ['\.venv', 'tests', 'alembic']
 
 # Poe task definitions
+[tool.poe]
+envfile = ".env"
+
+[tool.poe.tasks.format]
+help = "Run formatting pre-commit hooks"
+cmd = "pre-commit run --all-files"
+
 [tool.poe.tasks.lclstart]
 help = "Start a local postgres container in the background"
 shell = "docker run -d --rm --name postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_HOST_AUTH_METHOD=trust -p 127.0.0.1:5432:5432/tcp postgres"
@@ -89,3 +96,32 @@ cmd = "pytest tests"
 [tool.poe.tasks.lclconnect]
 help = "Connect to the local postgres database"
 cmd = "psql -h 127.0.0.1 -U postgres -d postgres"
+
+[tool.poe.tasks.rmtdiff]
+help = "Generate an Alemic migration script by diffing local changes against the remote database"
+env = { DB_PORT = "5432" }
+args = [
+  { name = "message", "options" = ["-m", "--message"], help = "The message to use for the migration", required = true },
+  { name = "dbname", "options" = ["-d", "--db-name"], help = "The name of the remote database to connect to", required = true }
+]
+shell = """
+PARAMS=$(aws ssm get-parameter --name "$DB_CREDENTIALS_SSM_PARAM" --with-decryption --query "Parameter.Value" --output text)
+HOST=$(echo $PARAMS | jq -r '.host')
+USERNAME=$(echo $PARAMS | jq -r '.username')
+PASSWORD=$(echo $PARAMS | jq -r '.password')
+DB_CONNECTION_STRING=postgresql://$USERNAME:$PASSWORD@$HOST:$DB_PORT/$dbname alembic revision --autogenerate -m "$message"
+"""
+
+[tool.poe.tasks.rmtupgrade]
+help = "Upgrade the remote database to the latest revision"
+env = { DB_PORT = "5432" }
+args = [
+  { name = "dbname", "options" = ["-d", "--db-name"], help = "The name of the remote database to connect to", required = true }
+]
+shell = """
+PARAMS=$(aws ssm get-parameter --name "$DB_CREDENTIALS_SSM_PARAM" --with-decryption --query "Parameter.Value" --output text)
+HOST=$(echo $PARAMS | jq -r '.host')
+USERNAME=$(echo $PARAMS | jq -r '.username')
+PASSWORD=$(echo $PARAMS | jq -r '.password')
+DB_CONNECTION_STRING=postgresql://$USERNAME:$PASSWORD@$HOST:$DB_PORT/$dbname alembic upgrade head
+"""

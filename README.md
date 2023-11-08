@@ -16,13 +16,15 @@ Database models and migrations for the Local News Lab's article recommendation s
 
 ## Usage
 
+A note before continuing: A lot of the commands you'll see below are wrapped inside [Poe tasks](https://poethepoet.natn.io/index.html) defined in `pyproject.toml`. Poe is installed as a dev-dependency; run `poe --help` to get a list of tasks and their descriptions. It's entirely possible to run commands without using Poe, but if you decide to use Poe, make sure to read through the tasks to understand what they do.
+
 ### As a package
 
 We use [SQLModel](https://sqlmodel.tiangolo.com/), a layer on top of SQLAlchemy with Pydantic, to define our tables.
 This is useful because we can import this package to interact with the tables AND have Pydantic objects in Python
 that correspond to a row in the table.
 
-To install the package from PyPi, run: `pip install lnl-article-rec-db`. Check existing versions
+To install the package from PyPi, run: `pip install article-rec-db`. Check existing versions
 [here](https://pypi.org/project/article-rec-db/).
 
 ### Initialize a new cluster
@@ -32,11 +34,13 @@ If the target cluster has IP restrictions, make sure your IP address is a valid 
 
 An example run with fake credentials (from the root dir of this project with the virtual env
 activated):
-`HOST=fakehost USER=fakeuser PASSWORD=fakepw DB_NAME=postgres python article_rec_db/db_init_stages/_0_init_db.py`
+`HOST=fakehost USER=fakeuser PASSWORD=fakepw DB_NAME=postgres python db_init_steps/_0_init_db.py`
+
+(If you run into a `ModuleNotFoundError`, try including `PYTHONPATH=$(pwd)` before the `python` command. This applies to any other commands that uses `python`.)
 
 This should run the most up-to-date SQLModel definitions of the tables, which means you are
 safe to then run any additional changes in role, access, and policy changes. So you can
-run the rest of the steps in `db_init_stages`, one after the other in ascending numerical order.
+run the rest of the steps in `db_init_steps`, one after the other in ascending numerical order.
 
 No `PORT` is passed because the default port is 5432, the standard for Postgres.
 
@@ -47,10 +51,12 @@ update the databases. This is what alembic is for!
 
 To generate a new revision after you've updated the models:
 
-1. Run this from the root of the project: `DB_CONNECTION_STRING='postgresql://user:password@host:port/db_name' alembic revision --autogenerate -m "message"`
+1. Run this from the root of the project: `DB_CONNECTION_STRING='postgresql://user:password@host:port/db_name' alembic revision --autogenerate -m "message"`. (There's a Poe task for this: run `poe rmtdiff -d db_name -m "message"`)
 2. Check the `/alembic/versions/` directory for the new revision and verify that it does what you want it to
 3. Run this from the root of the project: `DB_CONNECTION_STRING='postgresql://user:password@host:port/db_name' alembic upgrade head`
-4. Note that you only need to generate the revision file (step 1) _once_ because we want the same content in each environment's database, but you do need to run the `upgrade head` command once _for each_ database (change the DB_NAME to the desired target).
+4. Note that you only need to generate the revision file (step 1) _once_ because we want the same content in each environment's database, but you do need to run the `upgrade head` command once _for each_ database (change the DB_NAME to the desired target). (There's a Poe task for this: run `poe rmtupgrade -d db_name`)
+
+If you decide to do Step 1 or 4 with Poe, make sure to include the `DB_CREDENTIALS_SSM_PARAM` env var set to the name of the AWS SSM parameter that stores the credentials for the database, either inline or in a top-level `.env` file. Make sure the AWS CLI and `jq` command-line package are installed.
 
 To make new users, grant privileges, etc., follow the patterns used in db_init_stages along with the
 helpers under article_rec_db.
@@ -87,7 +93,7 @@ This is done with Poetry via the `poetry.lock` file.
 
 ### Run Code Format and Linting
 
-To manually run isort, black, and flake8 all in one go, simply run `pre-commit run --all-files`. Explore the `pre-commit` docs (linked above)
+To manually run isort, black, and flake8 all in one go, simply run `poe format` or `pre-commit run --all-files`. Explore the `pre-commit` docs (linked above)
 to see more options.
 
 ### Run Static Type Checking
@@ -108,6 +114,8 @@ is to run a Docker container, then run the tests while it is active.
 2. Run `docker run --rm --name postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_HOST_AUTH_METHOD=trust -p 127.0.0.1:5432:5432/tcp postgres`
 3. Run `DB_NAME=postgres pytest tests` from the root directory of the project. Explore the `pytest` docs (linked above)
    to see more options.
+
+Steps 2 and 3 can be combined into one Poe task: `poe test`, which also stops the container after the tests are done, even if tests fail. In addition, you can also run `poe lclstart` to just start the container, and `poe lclstop` to stop it whenever you're done. `poe lclconnect` will connect you to the container via `psql` so you can poke around.
 
 Note that if you decide to run the Postgres container with different credentials (a different password, port, etc.) or
 via a different method, you will likely need to update the test file to point to the correct Postgres instance.
