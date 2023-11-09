@@ -8,7 +8,7 @@ class ArticleExcludeReason(StrEnum):
     HAS_EXCLUDED_TAG = "has_excluded_tag"
 
 
-class RecommendationStrategy(StrEnum):
+class StrategyType(StrEnum):
     POPULARITY = "popularity"
     COLLABORATIVE_FILTERING_ITEM_BASED = "collaborative_filtering_item_based"
     SEMANTIC_SIMILARITY = "semantic_similarity"
