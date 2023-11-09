@@ -18,7 +18,6 @@ def test_add_page_not_article(create_and_drop_tables, engine):
     with Session(engine) as session:
         session.add(page)
         session.commit()
-        session.refresh(page)  # Effectively a SELECT query for the page we just added
 
         assert isinstance(page.id, UUID)
         assert isinstance(page.db_created_at, datetime)
@@ -47,7 +46,6 @@ def test_add_page_is_article(create_and_drop_tables, engine):
     with Session(engine) as session:
         session.add(article)
         session.commit()
-        session.refresh(article)
 
         assert isinstance(page.id, UUID)
         assert isinstance(page.db_created_at, datetime)

@@ -18,6 +18,6 @@ class Execution(SQLModel, table=True):
     db_created_at: Annotated[datetime, Field(default_factory=datetime.utcnow)]
 
     # An execution has multiple embeddings
-    embeddings: list["Embedding"] = Relationship(back_populates="execution")
+    embeddings: list["Embedding"] = Relationship(back_populates="execution")  # type: ignore
     # An execution has multiple recommendations
     # recommendations: list["Recommendation"] = Relationship(back_populates="execution")

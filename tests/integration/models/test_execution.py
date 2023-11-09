@@ -14,7 +14,6 @@ def test_add_execution(create_and_drop_tables, engine):
     with Session(engine) as session:
         session.add(execution)
         session.commit()
-        session.refresh(execution)
 
         assert isinstance(execution.id, UUID)
         assert execution.strategy == StrategyType.SEMANTIC_SIMILARITY
