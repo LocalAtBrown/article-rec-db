@@ -21,3 +21,6 @@ class Article(TimestampTrackedModel, table=True):
 
     # An article is always a page, but a page is not always an article
     page: Page = Relationship(back_populates="article")
+
+    # An article can have zero or more embeddings
+    embeddings: list["Embedding"] = Relationship(back_populates="article")  # type: ignore
