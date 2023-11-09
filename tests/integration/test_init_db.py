@@ -9,6 +9,7 @@ from article_rec_db.db.controller import (
 from article_rec_db.db.database import get_conn_string
 from article_rec_db.db.helpers import (
     Component,
+    Extension,
     Grant,
     Privilege,
     RowLevelSecurityPolicy,
@@ -45,10 +46,15 @@ def stage() -> Stage:
     return Stage.DEV
 
 
+@pytest.fixture
+def extensions() -> list[Extension]:
+    return [Extension.VECTOR]
+
+
 @pytest.mark.order(1)
-def test_pre_table_initialization(components, site_names, stage):
+def test_pre_table_initialization(components, site_names, stage, extensions):
     # run function
-    pre_table_initialization(stage=stage, components=components, site_names=site_names)
+    pre_table_initialization(stage=stage, components=components, site_names=site_names, extensions=extensions)
 
     engine = create_engine(get_conn_string(db_name="postgres"))
     with engine.connect() as conn:
@@ -90,6 +96,15 @@ def test_pre_table_initialization(components, site_names, stage):
             assert len(result_data) == len(site_names)
             expected_usernames = [f"{stage}_{component.name}_{site_name}" for site_name in site_names]
             assert sorted([row[0] for row in result_data]) == sorted(expected_usernames)
+
+    engine_stage = create_engine(get_conn_string(db_name=stage))
+    with engine_stage.connect() as conn:
+        # make sure extensions are installed
+        for extension in extensions:
+            statement = text("SELECT EXISTS(SELECT FROM pg_extension WHERE extname=:name) AS result")
+            result = conn.execute(statement, {"name": extension})
+            result_data = result.fetchone()
+            assert result_data[0] is True
 
 
 @pytest.mark.order(2)

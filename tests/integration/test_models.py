@@ -2,18 +2,27 @@ from collections.abc import Generator
 from datetime import datetime
 from uuid import UUID, uuid4
 
+import numpy as np
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future.engine import Engine
 from sqlmodel import Session, create_engine, func, select
 
-from article_rec_db.models import Article, ArticleExcludeReason, Page, SQLModel
+from article_rec_db.models import (
+    MAX_DIMENSIONS,
+    Article,
+    ArticleExcludeReason,
+    Embedding,
+    Page,
+    RecommendationStrategy,
+    SQLModel,
+)
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
 @pytest.fixture(scope="module")
 def engine() -> Engine:
-    return create_engine("postgresql://postgres:postgres@localhost:5432/postgres")
+    return create_engine("postgresql://postgres:postgres@localhost:5432/dev")
 
 
 # scope="function" ensures that the tables are dropped after each test and recreated before each test
@@ -64,7 +73,6 @@ def test_add_page_is_article(create_and_drop_tables, engine):
         session.add(article)
         session.commit()
         session.refresh(article)
-        session.refresh(page)
 
         assert isinstance(page.id, UUID)
         assert isinstance(page.db_created_at, datetime)
@@ -176,3 +184,38 @@ def test_add_articles_duplicate_site_and_id_in_site(create_and_drop_tables, engi
             match=r"duplicate key value violates unique constraint \"article_site_id_in_site_key\"",
         ):
             session.commit()
+
+
+@pytest.mark.order(10)
+def test_add_embedding(create_and_drop_tables, engine):
+    page = Page(
+        url="https://dallasfreepress.com/example-article/",
+        article_exclude_reason=None,
+    )
+    article = Article(
+        site=DALLAS_FREE_PRESS.name,
+        id_in_site="1234",
+        title="Example Article",
+        published_at=datetime.now(),
+        page=page,
+    )
+    embedding_vector = np.random.rand(MAX_DIMENSIONS).tolist()
+    embedding = Embedding(
+        article=article,
+        strategy=RecommendationStrategy.SEMANTIC_SIMILARITY,
+        vector=embedding_vector,
+    )
+
+    with Session(engine) as session:
+        session.add(embedding)
+        session.commit()
+        session.refresh(embedding)
+
+        assert article.embeddings[0] is embedding
+
+        assert isinstance(embedding.db_created_at, datetime)
+        assert embedding.db_updated_at is None
+        assert embedding.article_id == article.page_id
+        assert embedding.strategy == RecommendationStrategy.SEMANTIC_SIMILARITY
+        assert np.isclose(embedding.vector, embedding_vector).all()
+        assert embedding.article is article
