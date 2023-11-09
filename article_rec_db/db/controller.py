@@ -4,7 +4,8 @@ from sqlalchemy.future.engine import create_engine
 from sqlmodel import SQLModel
 
 from .database import create_database, get_conn_string
-from .helpers import Component, Stage
+from .extension import enable_extension
+from .helpers import Component, Extension, Stage
 from .role import (
     assign_role,
     create_role,
@@ -15,7 +16,7 @@ from .role import (
 
 
 def pre_table_initialization(
-    stage: Stage, components: list[Component], site_names: list[str], create_dbs: bool = True
+    stage: Stage, components: list[Component], extensions: list[Extension], site_names: list[str], create_dbs: bool = True
 ) -> None:
     engine = create_engine(get_conn_string())
 
@@ -28,6 +29,12 @@ def pre_table_initialization(
             usernames = [f"{stage}_{component.name}_{site_name}" for site_name in site_names]
             create_users(conn, stage=stage, component=component, site_names=site_names)
             assign_role(conn, role=role, usernames=usernames)
+        conn.commit()
+
+    engine_stage = create_engine(get_conn_string(db_name=stage))
+    with engine_stage.connect() as conn:
+        for extension in extensions:
+            enable_extension(conn, extension=extension)
         conn.commit()
 
 

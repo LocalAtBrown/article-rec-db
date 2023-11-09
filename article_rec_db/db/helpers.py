@@ -30,6 +30,10 @@ class Privilege(StrEnum):
     ALTER_SYSTEM = "ALTER_SYSTEM"
 
 
+class Extension(StrEnum):
+    VECTOR = "vector"
+
+
 class Stage(StrEnum):
     DEV = "dev"
     PROD = "prod"
