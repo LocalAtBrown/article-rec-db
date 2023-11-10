@@ -17,6 +17,10 @@ if __name__ == "__main__":
     site_names = [AFRO_LA.name_snakecase, DALLAS_FREE_PRESS.name_snakecase]
 
     for stage in stages:
-        pre_table_initialization(stage=stage, components=components, extensions=[Extension.VECTOR], site_names=site_names)
+        # vector extension needs to be specified here so that local build works.
+        # remote prod and dev databases will have their extension added in step 2
+        pre_table_initialization(
+            stage=stage, components=components, extensions=[Extension(name="vector")], site_names=site_names
+        )
 
     logger.info(f"{os.path.relpath(__file__)} done!")

@@ -26,7 +26,7 @@ def components() -> list[Component]:
         grants=[
             Grant(
                 privileges=[Privilege.SELECT, Privilege.INSERT, Privilege.UPDATE, Privilege.DELETE],
-                tables=["page", "article"],
+                tables=["page", "article", "embedding", "execution"],
             )
         ],
         policies=[
@@ -48,7 +48,7 @@ def stage() -> Stage:
 
 @pytest.fixture
 def extensions() -> list[Extension]:
-    return [Extension.VECTOR]
+    return [Extension(name="vector")]
 
 
 @pytest.mark.order(1)
@@ -102,7 +102,7 @@ def test_pre_table_initialization(components, site_names, stage, extensions):
         # make sure extensions are installed
         for extension in extensions:
             statement = text("SELECT EXISTS(SELECT FROM pg_extension WHERE extname=:name) AS result")
-            result = conn.execute(statement, {"name": extension})
+            result = conn.execute(statement, {"name": extension.name})
             result_data = result.fetchone()
             assert result_data[0] is True
 

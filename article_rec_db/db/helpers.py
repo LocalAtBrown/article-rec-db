@@ -30,8 +30,12 @@ class Privilege(StrEnum):
     ALTER_SYSTEM = "ALTER_SYSTEM"
 
 
-class Extension(StrEnum):
-    VECTOR = "vector"
+@dataclass
+class Extension:
+    name: str
+    schema: Optional[str] = None
+    version: Optional[str] = None
+    cascade: bool = False
 
 
 class Stage(StrEnum):
