@@ -103,7 +103,7 @@ cmd = "psql -h 127.0.0.1 -U postgres -d postgres"
 help = "Generate an Alemic migration script by diffing local changes against the remote database"
 env = { DB_PORT = "5432" }
 args = [
-  { name = "dbname", positional = true, help = "The name of the remote database to connect to", required = true },
+  { name = "stage", positional = true, help = "The name of the remote database to connect to", required = true },
   { name = "message", "options" = [
     "-m",
     "--message",
