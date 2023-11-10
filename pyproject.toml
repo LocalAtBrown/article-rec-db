@@ -103,8 +103,11 @@ cmd = "psql -h 127.0.0.1 -U postgres -d postgres"
 help = "Generate an Alemic migration script by diffing local changes against the remote database"
 env = { DB_PORT = "5432" }
 args = [
-  { name = "message", "options" = ["-m", "--message"], help = "The message to use for the migration", required = true },
-  { name = "dbname", "options" = ["-d", "--db-name"], help = "The name of the remote database to connect to", required = true }
+  { name = "dbname", positional = true, help = "The name of the remote database to connect to", required = true },
+  { name = "message", "options" = [
+    "-m",
+    "--message",
+  ], help = "The message to use for the migration", required = true },
 ]
 shell = """
 PARAMS=$(aws ssm get-parameter --name "$DB_CREDENTIALS_SSM_PARAM" --with-decryption --query "Parameter.Value" --output text)
@@ -118,7 +121,7 @@ DB_CONNECTION_STRING=postgresql://$USERNAME:$PASSWORD@$HOST:$DB_PORT/$dbname ale
 help = "Upgrade the remote database to the latest revision"
 env = { DB_PORT = "5432" }
 args = [
-  { name = "dbname", "options" = ["-d", "--db-name"], help = "The name of the remote database to connect to", required = true }
+  { name = "stage", positional = true, help = "The name of the remote database to connect to", required = true },
 ]
 shell = """
 PARAMS=$(aws ssm get-parameter --name "$DB_CREDENTIALS_SSM_PARAM" --with-decryption --query "Parameter.Value" --output text)
@@ -127,3 +130,11 @@ USERNAME=$(echo $PARAMS | jq -r '.username')
 PASSWORD=$(echo $PARAMS | jq -r '.password')
 DB_CONNECTION_STRING=postgresql://$USERNAME:$PASSWORD@$HOST:$DB_PORT/$dbname alembic upgrade head
 """
+
+[tool.poe.tasks.terraform]
+help = "Go to a stage directory and run a terraform command"
+args = [
+  { name = "stage", positional = true, help = "The name of the stage to run terraform in", required = true },
+  { name = "command", positional = true, help = "The terraform command to run", required = true },
+]
+cmd = "terraform -chdir=terraform/stages/$stage $command"
