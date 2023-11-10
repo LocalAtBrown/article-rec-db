@@ -67,7 +67,7 @@ def create_users(conn: Connection, stage: Stage, component: Component, site_name
                 PASSWORD=pw,
             )
             ssm_client.put_parameter(
-                Name=f"/{stage}/ata/{site_name}/{component.name}/database-credentials",
+                Name=f"/{stage}/article-rec/{site_name.replace('_', '-')}/{component.name}/database-credentials",
                 Description=f"DB credentials for partner {site_name}, component {component}, and env {stage}.",
                 Value=json.dumps(user_creds.__dict__),
                 Type="String",
