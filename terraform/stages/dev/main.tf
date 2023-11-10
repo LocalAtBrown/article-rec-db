@@ -30,11 +30,12 @@ locals {
 }
 
 provider "postgresql" {
-  host     = local.credentials_admin.host
-  port     = local.credentials_admin.port
-  username = local.credentials_admin.username
-  password = local.credentials_admin.password
-  sslmode  = "require"
+  host      = local.credentials_admin.host
+  port      = local.credentials_admin.port
+  username  = local.credentials_admin.username
+  password  = local.credentials_admin.password
+  sslmode   = "require"
+  superuser = false
 }
 
 resource "postgresql_database" "db" {
@@ -75,4 +76,11 @@ resource "aws_ssm_parameter" "training_job_site_credentials" {
     USERNAME = postgresql_role.training_job_site[each.key].name
     PASSWORD = random_password.training_job_site_password[each.key].result
   })
+}
+
+# Enable extensions
+resource "postgresql_extension" "pgvector" {
+  name     = "vector"
+  version  = "0.4.1"
+  database = var.stage
 }
