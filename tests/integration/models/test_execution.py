@@ -7,7 +7,7 @@ from sqlmodel import Session
 from article_rec_db.models import Execution, StrategyType
 
 
-@pytest.mark.order(10)
+@pytest.mark.order(7)
 def test_add_execution(create_and_drop_tables, engine):
     execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY)
 

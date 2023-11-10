@@ -9,7 +9,7 @@ from article_rec_db.models import Article, ArticleExcludeReason, Page
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
-@pytest.mark.order(4)
+@pytest.mark.order(1)
 def test_add_page_not_article(create_and_drop_tables, engine):
     page = Page(
         url="https://afrolanews.org/",
@@ -27,7 +27,7 @@ def test_add_page_not_article(create_and_drop_tables, engine):
         assert len(page.article) == 0
 
 
-@pytest.mark.order(5)
+@pytest.mark.order(2)
 def test_add_page_is_article(create_and_drop_tables, engine):
     # This is how we would add a page that is also an article
     page = Page(
@@ -65,7 +65,7 @@ def test_add_page_is_article(create_and_drop_tables, engine):
         assert article.page is page
 
 
-@pytest.mark.order(6)
+@pytest.mark.order(3)
 def test_add_pages_duplicate_url(create_and_drop_tables, engine):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",

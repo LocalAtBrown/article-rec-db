@@ -9,7 +9,7 @@ from article_rec_db.models import Article, Page
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
-@pytest.mark.order(7)
+@pytest.mark.order(4)
 def test_add_article_without_page(create_and_drop_tables, engine):
     article = Article(
         page_id=uuid4(),
@@ -35,7 +35,7 @@ def test_add_article_without_page(create_and_drop_tables, engine):
         assert num_articles == 0
 
 
-@pytest.mark.order(8)
+@pytest.mark.order(5)
 def test_add_article_excluded(create_and_drop_tables, engine):
     # Would be nice to test that adding a non-article (whose page has a non-null article_exclude_reason)
     # to the article table fails, but doing so at the model level is messy, so for now passing the responsibility
@@ -43,7 +43,7 @@ def test_add_article_excluded(create_and_drop_tables, engine):
     pass
 
 
-@pytest.mark.order(9)
+@pytest.mark.order(6)
 def test_add_articles_duplicate_site_and_id_in_site(create_and_drop_tables, engine):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",

@@ -20,7 +20,7 @@ def rng() -> np.random.Generator:
     return np.random.default_rng(42)
 
 
-@pytest.mark.order(11)
+@pytest.mark.order(8)
 def test_add_embedding(create_and_drop_tables, engine, rng):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
@@ -59,7 +59,7 @@ def test_add_embedding(create_and_drop_tables, engine, rng):
         assert embedding.execution is execution
 
 
-@pytest.mark.order(12)
+@pytest.mark.order(9)
 def test_select_embeddings_knn(create_and_drop_tables, engine, rng):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
