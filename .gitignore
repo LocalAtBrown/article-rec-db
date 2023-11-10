@@ -166,3 +166,8 @@ cython_debug/
 
 # VSCode
 /.vscode
+
+# Terraform
+.terraform/
+*.tfvars.json
+*.tfvars
