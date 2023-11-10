@@ -47,4 +47,6 @@ resource "postgresql_extension" "pgvector" {
   name     = "vector"
   version  = "0.4.1"
   database = var.stage
+
+  depends_on = [postgresql_database.db]
 }

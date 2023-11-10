@@ -71,7 +71,7 @@ envfile = ".env"
 
 [tool.poe.tasks.format]
 help = "Run formatting pre-commit hooks"
-cmd = "pre-commit run --all-files"
+shell = "pre-commit run --all-files; terraform fmt -recursive"
 
 [tool.poe.tasks.lclstart]
 help = "Start a local postgres container in the background"
@@ -114,7 +114,7 @@ PARAMS=$(aws ssm get-parameter --name "$DB_CREDENTIALS_SSM_PARAM" --with-decrypt
 HOST=$(echo $PARAMS | jq -r '.host')
 USERNAME=$(echo $PARAMS | jq -r '.username')
 PASSWORD=$(echo $PARAMS | jq -r '.password')
-DB_CONNECTION_STRING=postgresql://$USERNAME:$PASSWORD@$HOST:$DB_PORT/$dbname alembic revision --autogenerate -m "$message"
+DB_CONNECTION_STRING=postgresql://$USERNAME:$PASSWORD@$HOST:$DB_PORT/$stage alembic revision --autogenerate -m "$message"
 """
 
 [tool.poe.tasks.rmtupgrade]
@@ -128,11 +128,11 @@ PARAMS=$(aws ssm get-parameter --name "$DB_CREDENTIALS_SSM_PARAM" --with-decrypt
 HOST=$(echo $PARAMS | jq -r '.host')
 USERNAME=$(echo $PARAMS | jq -r '.username')
 PASSWORD=$(echo $PARAMS | jq -r '.password')
-DB_CONNECTION_STRING=postgresql://$USERNAME:$PASSWORD@$HOST:$DB_PORT/$dbname alembic upgrade head
+DB_CONNECTION_STRING=postgresql://$USERNAME:$PASSWORD@$HOST:$DB_PORT/$stage alembic upgrade head
 """
 
 [tool.poe.tasks.terraform]
-help = "Go to a stage directory and run a terraform command"
+help = "Go to a stage directory and run a terraform command (init, plan, apply, destroy)"
 args = [
   { name = "stage", positional = true, help = "The name of the stage to run terraform in", required = true },
   { name = "command", positional = true, help = "The terraform command to run", required = true },
