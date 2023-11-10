@@ -17,7 +17,7 @@ resource "random_password" "training_job_site_password" {
 
   length           = 20
   special          = true
-  override_special = "!#$%*()-_=+[]{}<>:?"
+  override_special = "" # no special characters to avoid SSM displaying their unicode equivalents
 }
 
 resource "postgresql_role" "training_job_site" {
