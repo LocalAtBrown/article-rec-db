@@ -46,7 +46,5 @@ resource "aws_ssm_parameter" "training_job_site_credentials" {
 resource "postgresql_extension" "pgvector" {
   name     = "vector"
   version  = "0.4.1"
-  database = var.stage
-
-  depends_on = [postgresql_database.db]
+  database = postgresql_database.db.name
 }
