@@ -15,8 +15,9 @@ resource "postgresql_role" "training_job" {
 resource "random_password" "training_job_site_password" {
   for_each = local.sites
 
-  length  = 20
-  special = true
+  length           = 20
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 resource "postgresql_role" "training_job_site" {
