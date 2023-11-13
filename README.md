@@ -27,49 +27,26 @@ that correspond to a row in the table.
 To install the package from PyPi, run: `pip install article-rec-db`. Check existing versions
 [here](https://pypi.org/project/article-rec-db/).
 
-### Initialize a new cluster
+### Database management
 
-If you want to initialize a fresh database cluster, pass in the env vars to connect to the cluster and run `init_db`.
-If the target cluster has IP restrictions, make sure your IP address is a valid access point.
+We use [Terraform](https://developer.hashicorp.com/terraform) to manage cluster entities such as databases, roles and extensions. The code is in the `terraform` directory. Stages (dev and prod) are represented as different databases. To make changes to an existing database,
 
-An example run with fake credentials (from the root dir of this project with the virtual env
-activated):
-`HOST=fakehost USER=fakeuser PASSWORD=fakepw DB_NAME=postgres python db_init_steps/_0_init_db.py`
+1. Make changes inside `terraform/modules`.
+2. Run `poe terraform [stage] plan` to see the changes that will be applied to the corresponding database.
+3. At this point, if you're happy, you can run `poe terraform [stage] apply` yourself, but we prefer a CI/CD approach. Merging a PR to the `dev` branch will trigger a plan to be applied to the `dev` database, and the same for the `prod` branch. _We always merge to `dev` first, then do another merge from `dev` to `prod`._
 
-(If you run into a `ModuleNotFoundError`, try including `PYTHONPATH=$(pwd)` before the `python` command. This applies to any other commands that uses `python`.)
-
-This should run the most up-to-date SQLModel definitions of the tables, which means you are
-safe to then run any additional changes in role, access, and policy changes. So you can
-run the rest of the steps in `db_init_steps`, one after the other in ascending numerical order.
-
-No `PORT` is passed because the default port is 5432, the standard for Postgres.
-
-### Migrations
+### Table and column migrations
 
 So you made some changes to what tables there are, what columns there are, indices, etc. and you'd like to
-update the databases. This is what alembic is for!
+update the databases. This is what alembic is for! (And notice the difference between Terraform and alembic: Terraform manages database entities that are not specific to a database, like roles and extensions, while alembic manages database entities that are specific to a database, like tables and columns.)
 
 To generate a new revision after you've updated the models:
 
 1. Run this from the root of the project: `DB_CONNECTION_STRING='postgresql://user:password@host:port/db_name' alembic revision --autogenerate -m "message"`. (There's a Poe task for this: run `poe rmtdiff -d db_name -m "message"`)
 2. Check the `/alembic/versions/` directory for the new revision and verify that it does what you want it to
-3. Run this from the root of the project: `DB_CONNECTION_STRING='postgresql://user:password@host:port/db_name' alembic upgrade head`
-4. Note that you only need to generate the revision file (step 1) _once_ because we want the same content in each environment's database, but you do need to run the `upgrade head` command once _for each_ database (change the DB_NAME to the desired target). (There's a Poe task for this: run `poe rmtupgrade -d db_name`)
+3. Run this from the root of the project: `DB_CONNECTION_STRING='postgresql://user:password@host:port/db_name' alembic upgrade head`. Note that you only need to generate the revision file (step 1) _once_ because we want the same content in each environment's database, but you do need to run the `upgrade head` command once _for each_ database (change the DB_NAME to the desired target). (There's a Poe task for this: run `poe rmtupgrade -d db_name`)
 
-If you decide to do Step 1 or 4 with Poe, make sure to include the `DB_CREDENTIALS_SSM_PARAM` env var set to the name of the AWS SSM parameter that stores the credentials for the database, either inline or in a top-level `.env` file. Make sure the AWS CLI and `jq` command-line package are installed.
-
-To make new users, grant privileges, etc., follow the patterns used in db_init_stages along with the
-helpers under article_rec_db.
-
-1. Create a new file under db*init_stages that does what you want and is prefixed with `\_X*`, where `X` is the next number (it has no function, it's just nice to keep track of the step order).
-2. Run the file. You can run it like so: `HOST=fakehost USER=fakeuser PASSWORD=fakepw DB_NAME=postgres python article_rec_db/db_init_stages/_X_fake_file.py`
-3. I'd recommend that you then connect to the cluster and verify your changes took place.
-
-Note that you must provide valid host, user, password, and database name environment variables for it to work. The `PORT`
-env var has a default value of 5432, so it is omitted here. The only other env var you might need
-(if you are creating new roles/users that have credentials) is the `ENABLE_SSM` env var. By default
-it is `FALSE` but if you set it to `TRUE` then it will make sure to upload any new credentials to the
-SSM parameter store.
+Similar to database management, we let our CI/CD handle Step 3.
 
 ## Development
 
@@ -115,10 +92,10 @@ is to run a Docker container, then run the tests while it is active.
 3. Run `DB_NAME=postgres pytest tests` from the root directory of the project. Explore the `pytest` docs (linked above)
    to see more options.
 
-Steps 2 and 3 can be combined into one Poe task: `poe test`, which also stops the container after the tests are done, even if tests fail. In addition, you can also run `poe lclstart` to just start the container, and `poe lclstop` to stop it whenever you're done. `poe lclconnect` will connect you to the container via `psql` so you can poke around.
-
 Note that if you decide to run the Postgres container with different credentials (a different password, port, etc.) or
 via a different method, you will likely need to update the test file to point to the correct Postgres instance.
 
 Additionally, if you want to re-run the tests, you want to make sure you start over from a fresh Postgres
 instance. If you run Postgres via Docker, you can simply `ctrl-C` to stop the image and start a new one.
+
+Steps 2 and 3 can be combined into one Poe task: `poe test`, which also stops the container after the tests are done, even if tests fail. In addition, you can also run `poe lclstart` to just start the container, and `poe lclstop` to stop it whenever you're done. `poe lclconnect` will connect you to the container via `psql` so you can poke around.

@@ -2,8 +2,7 @@ name: publish
 on:
   push:
     branches:
-      - main
-      - orm
+      - dev # dev acts as the default branch for package version updates, for now
     paths:
       - "pyproject.toml"
 jobs:
