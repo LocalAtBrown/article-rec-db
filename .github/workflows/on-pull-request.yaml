@@ -14,7 +14,7 @@ jobs:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: postgres
+        image: ankane/pgvector:v0.4.1
         # Provide the password for postgres
         env:
           POSTGRES_PASSWORD: postgres
@@ -44,4 +44,4 @@ jobs:
       - name: run mypy
         run: mypy
       - name: run tests
-        run: DB_NAME=postgres pytest tests
+        run: pytest tests
