@@ -2,8 +2,8 @@ name: run checks
 on:
   pull_request:
     branches:
-      - main
-      - orm
+      - dev
+      - prod
     paths:
       - "**.py"
 
