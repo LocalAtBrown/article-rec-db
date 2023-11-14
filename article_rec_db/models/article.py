@@ -24,3 +24,6 @@ class Article(UpdateTrackedModel, table=True):
 
     # An article can have zero or more embeddings
     embeddings: list["Embedding"] = Relationship(back_populates="article")  # type: ignore
+
+    # An article can be the target of one or more default recommendations
+    default_recommendations_where_this_is_target: list["RecommendationDefault"] = Relationship(back_populates="article")  # type: ignore
