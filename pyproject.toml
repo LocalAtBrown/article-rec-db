@@ -12,13 +12,10 @@ packages = [{ include = "article_rec_db" }]
 
 [tool.poetry.dependencies]
 python = ">= 3.9, <3.12"
-boto3 = "^1.28.76"
-boto3-stubs = { version = "^1.28.76", extras = ["ssm"] }
 sqlmodel = "^0.0.11"
 pydantic = "^1.10.13"
 sqlalchemy = "^1.4.36"
 psycopg2 = "^2.9.9"
-loguru = "^0.7.2"
 pgvector = "^0.2.3"
 numpy = "^1.26.1"
 
