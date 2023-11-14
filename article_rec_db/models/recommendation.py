@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import UUID
 
 from sqlmodel import Field, Relationship
@@ -8,26 +8,29 @@ from .base import AutoUUIDPrimaryKey, CreationTracked, SQLModel
 from .execution import Execution
 
 
-class Recommendation:
+class Recommendation(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
-    Recommendations where there's a source article (i.e., the one the reader is reading)
+    Usual recommendations have a source article (i.e., the one the reader is reading)
     and a target article (i.e., the one the reader is recommended upon/after reading the source).
-    """
 
-    pass
-
-
-class RecommendationDefault(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
-    """
-    Default recommendations. Just target articles with no source, since it's
+    Default recommendations are recommendations with just a target and without a source, since it's
     supposed to be used as a fallback for any source.
     """
 
     execution_id: Annotated[UUID, Field(foreign_key="execution.id")]
-    article_id: Annotated[UUID, Field(foreign_key="article.page_id")]
+    source_article_id: Annotated[Optional[UUID], Field(foreign_key="article.page_id")]
+    target_article_id: Annotated[UUID, Field(foreign_key="article.page_id")]
 
     # A recommendation always corresponds to a job execution
     execution: Execution = Relationship(back_populates="recommendations_default")
 
-    # A default recommendation always corresponds to a target article
-    article: Article = Relationship(back_populates="default_recommendations_where_this_is_target")
+    # A default recommendation always corresponds to a target article, but not necessarily to a source article
+    # The sa_relationship_kwargs is here to avert the AmbiguousForeignKeyError, see: https://github.com/tiangolo/sqlmodel/issues/10#issuecomment-1537445078
+    source_article: Optional[Article] = Relationship(
+        back_populates="recommendations_where_this_is_source",
+        sa_relationship_kwargs={"foreign_keys": "[Recommendation.source_article_id]"},
+    )
+    target_article: Article = Relationship(
+        back_populates="recommendations_where_this_is_target",
+        sa_relationship_kwargs={"foreign_keys": "[Recommendation.target_article_id]"},
+    )
