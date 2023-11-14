@@ -1,10 +1,10 @@
 from typing import Annotated
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from sqlmodel import Field, Relationship
 
 from .article import Article
-from .base import CreationTrackedModel
+from .base import AutoUUIDPrimaryKey, CreationTracked, SQLModel
 from .execution import Execution
 
 
@@ -17,13 +17,12 @@ class Recommendation:
     pass
 
 
-class RecommendationDefault(CreationTrackedModel, table=True):
+class RecommendationDefault(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
     Default recommendations. Just target articles with no source, since it's
     supposed to be used as a fallback for any source.
     """
 
-    id: Annotated[UUID, Field(default_factory=uuid4, primary_key=True)]
     execution_id: Annotated[UUID, Field(foreign_key="execution.id")]
     article_id: Annotated[UUID, Field(foreign_key="article.page_id")]
 

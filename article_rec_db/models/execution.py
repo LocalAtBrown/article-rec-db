@@ -1,18 +1,14 @@
-from typing import Annotated
-from uuid import UUID, uuid4
+from sqlmodel import Relationship
 
-from sqlmodel import Field, Relationship
-
-from .base import CreationTrackedModel
+from .base import AutoUUIDPrimaryKey, CreationTracked, SQLModel
 from .helpers import StrategyType
 
 
-class Execution(CreationTrackedModel, table=True):
+class Execution(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
     Log of training job executions, each with respect to a single strategy.
     """
 
-    id: Annotated[UUID, Field(default_factory=uuid4, primary_key=True)]
     strategy: StrategyType
 
     # An execution has multiple embeddings
