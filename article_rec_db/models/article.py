@@ -6,11 +6,11 @@ from sqlmodel import Column, Field, Relationship, String, UniqueConstraint
 
 from article_rec_db.sites import SiteName
 
-from .base import TimestampTrackedModel
+from .base import UpdateTrackedModel
 from .page import Page
 
 
-class Article(TimestampTrackedModel, table=True):
+class Article(UpdateTrackedModel, table=True):
     __table_args__ = (UniqueConstraint("site", "id_in_site"),)
 
     page_id: Annotated[UUID, Field(primary_key=True, foreign_key="page.id")]
