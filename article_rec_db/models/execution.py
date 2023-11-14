@@ -15,4 +15,4 @@ class Execution(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     embeddings: list["Embedding"] = Relationship(back_populates="execution")  # type: ignore
     # An execution can produce zero (if it doesn't have a default strategy, such as popularity)
     # or multiple default recommendations (if it has a default strategy)
-    recommendations_default: list["Recommendation"] = Relationship(back_populates="execution")  # type: ignore
+    recommendations: list["Recommendation"] = Relationship(back_populates="execution")  # type: ignore

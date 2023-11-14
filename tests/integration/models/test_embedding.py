@@ -20,7 +20,6 @@ def rng() -> np.random.Generator:
     return np.random.default_rng(42)
 
 
-@pytest.mark.order(8)
 def test_add_embedding(create_and_drop_tables, engine, rng):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
@@ -30,7 +29,7 @@ def test_add_embedding(create_and_drop_tables, engine, rng):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
-        published_at=datetime.now(),
+        published_at=datetime.utcnow(),
         page=page,
     )
     execution = Execution(strategy=StrategyType.COLLABORATIVE_FILTERING_ITEM_BASED)
@@ -59,7 +58,6 @@ def test_add_embedding(create_and_drop_tables, engine, rng):
         assert embedding.execution is execution
 
 
-@pytest.mark.order(9)
 def test_select_embeddings_knn(create_and_drop_tables, engine, rng):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
@@ -77,21 +75,21 @@ def test_select_embeddings_knn(create_and_drop_tables, engine, rng):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
-        published_at=datetime.now(),
+        published_at=datetime.utcnow(),
         page=page1,
     )
     article2 = Article(
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article 2",
-        published_at=datetime.now(),
+        published_at=datetime.utcnow(),
         page=page2,
     )
     article3 = Article(
         site=DALLAS_FREE_PRESS.name,
         id_in_site="3456",
         title="Example Article 3",
-        published_at=datetime.now(),
+        published_at=datetime.utcnow(),
         page=page3,
     )
     execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY)

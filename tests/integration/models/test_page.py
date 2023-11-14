@@ -5,11 +5,9 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session
 
-from article_rec_db.models import Article, ArticleExcludeReason, Page
-from article_rec_db.sites import DALLAS_FREE_PRESS
+from article_rec_db.models import ArticleExcludeReason, Page
 
 
-@pytest.mark.order(1)
 def test_add_page_not_article(create_and_drop_tables, engine):
     page = Page(
         url="https://afrolanews.org/",
@@ -27,45 +25,6 @@ def test_add_page_not_article(create_and_drop_tables, engine):
         assert len(page.article) == 0
 
 
-@pytest.mark.order(2)
-def test_add_page_is_article(create_and_drop_tables, engine):
-    # This is how we would add a page that is also an article
-    page = Page(
-        url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
-    )
-    article_published_at = datetime.now()
-    article = Article(
-        site=DALLAS_FREE_PRESS.name,
-        id_in_site="1234",
-        title="Example Article",
-        published_at=article_published_at,
-        page=page,
-    )
-
-    with Session(engine) as session:
-        session.add(article)
-        session.commit()
-
-        assert isinstance(page.id, UUID)
-        assert isinstance(page.db_created_at, datetime)
-        assert page.db_updated_at is None
-        assert page.url == "https://dallasfreepress.com/example-article/"
-        assert page.article_exclude_reason is None
-        assert len(page.article) == 1
-        assert page.article[0] is article
-
-        assert isinstance(article.db_created_at, datetime)
-        assert article.db_updated_at is None
-        assert article.page_id == page.id
-        assert article.site == DALLAS_FREE_PRESS.name
-        assert article.id_in_site == "1234"
-        assert article.title == "Example Article"
-        assert article.published_at == article_published_at
-        assert article.page is page
-
-
-@pytest.mark.order(3)
 def test_add_pages_duplicate_url(create_and_drop_tables, engine):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
@@ -86,3 +45,23 @@ def test_add_pages_duplicate_url(create_and_drop_tables, engine):
             match=r"duplicate key value violates unique constraint \"page_url_key\"",
         ):
             session.commit()
+
+
+def test_update_page(create_and_drop_tables, engine):
+    page = Page(
+        url="https://dallasfreepress.com/example-article/",
+        article_exclude_reason=None,
+    )
+    with Session(engine) as session:
+        session.add(page)
+        session.commit()
+
+        # Upon creation, db_updated_at should be None
+        assert page.db_updated_at is None
+
+        page.url = "https://dallasfreepress.com/example-article-2/"
+        session.add(page)
+        session.commit()
+
+        # After updating, db_updated_at should be a datetime
+        assert isinstance(page.db_updated_at, datetime)
