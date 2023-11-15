@@ -5,8 +5,8 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import Article, Page
-from article_rec_db.sites import DALLAS_FREE_PRESS
+from article_rec_db.models import Article, ArticleExcludeReason, Page
+from article_rec_db.sites import AFRO_LA, DALLAS_FREE_PRESS
 
 
 def test_add_article_with_page(create_and_drop_tables, engine):
@@ -74,11 +74,42 @@ def test_add_article_without_page(create_and_drop_tables, engine):
         assert num_articles == 0
 
 
-def test_add_article_excluded(create_and_drop_tables, engine):
-    # Would be nice to test that adding a non-article (whose page has a non-null article_exclude_reason)
-    # to the article table fails, but doing so at the model level is messy, so for now passing the responsibility
-    # to the instance creation method in whichever application that uses this library
-    pass
+def test_add_article_excluded_from_page_side(create_and_drop_tables, engine):
+    article = Article(
+        site=AFRO_LA.name,
+        id_in_site="1234",
+        title="Actually a Home Page and Not an Article",
+        published_at=datetime.utcnow(),
+    )
+
+    with pytest.raises(
+        AssertionError, match=r"Page has a non-null article_exclude_reason, so it cannot be added as an article"
+    ):
+        Page(
+            id=uuid4(),
+            url="https://afrolanews.org/",
+            article_exclude_reason=ArticleExcludeReason.NOT_ARTICLE,
+            article=[article],
+        )
+
+
+def test_add_article_excluded_from_article_side(create_and_drop_tables, engine):
+    page = Page(
+        url="https://afrolanews.org/",
+        article_exclude_reason=ArticleExcludeReason.NOT_ARTICLE,
+    )
+
+    with pytest.raises(
+        AssertionError,
+        match=r"Page has a non-null article_exclude_reason, so it cannot be added as an article",
+    ):
+        Article(
+            site=AFRO_LA.name,
+            id_in_site="1234",
+            title="Actually a Home Page and Not an Article",
+            published_at=datetime.utcnow(),
+            page=page,
+        )
 
 
 def test_add_articles_duplicate_site_and_id_in_site(create_and_drop_tables, engine):
