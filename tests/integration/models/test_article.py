@@ -81,16 +81,25 @@ def test_add_article_excluded_from_page_side(create_and_drop_tables, engine):
         title="Actually a Home Page and Not an Article",
         published_at=datetime.utcnow(),
     )
+    page = Page(
+        id=uuid4(),
+        url="https://afrolanews.org/",
+        article_exclude_reason=ArticleExcludeReason.NOT_ARTICLE,
+        article=[article],
+    )
 
-    with pytest.raises(
-        AssertionError, match=r"Page has a non-null article_exclude_reason, so it cannot be added as an article"
-    ):
-        Page(
-            id=uuid4(),
-            url="https://afrolanews.org/",
-            article_exclude_reason=ArticleExcludeReason.NOT_ARTICLE,
-            article=[article],
-        )
+    with Session(engine) as session:
+        session.add(page)
+
+        with pytest.raises(
+            AssertionError, match=r"Page has a non-null article_exclude_reason, so it cannot be added as an article"
+        ):
+            session.commit()
+
+        # Check that nothing is written
+        session.rollback()
+        num_articles = session.exec(select(func.count(Article.page_id))).one()
+        assert num_articles == 0
 
 
 def test_add_article_excluded_from_article_side(create_and_drop_tables, engine):
@@ -98,18 +107,26 @@ def test_add_article_excluded_from_article_side(create_and_drop_tables, engine):
         url="https://afrolanews.org/",
         article_exclude_reason=ArticleExcludeReason.NOT_ARTICLE,
     )
+    article = Article(
+        site=AFRO_LA.name,
+        id_in_site="1234",
+        title="Actually a Home Page and Not an Article",
+        published_at=datetime.utcnow(),
+        page=page,
+    )
 
-    with pytest.raises(
-        AssertionError,
-        match=r"Page has a non-null article_exclude_reason, so it cannot be added as an article",
-    ):
-        Article(
-            site=AFRO_LA.name,
-            id_in_site="1234",
-            title="Actually a Home Page and Not an Article",
-            published_at=datetime.utcnow(),
-            page=page,
-        )
+    with Session(engine) as session:
+        session.add(article)
+
+        with pytest.raises(
+            AssertionError, match=r"Page has a non-null article_exclude_reason, so it cannot be added as an article"
+        ):
+            session.commit()
+
+        # Check that nothing is written
+        session.rollback()
+        num_articles = session.exec(select(func.count(Article.page_id))).one()
+        assert num_articles == 0
 
 
 def test_add_articles_duplicate_site_and_id_in_site(create_and_drop_tables, engine):
@@ -140,12 +157,18 @@ def test_add_articles_duplicate_site_and_id_in_site(create_and_drop_tables, engi
     with Session(engine) as session:
         session.add(article1)
         session.add(article2)
+
         # Since the combination of site and id_in_site is unique, adding an article with an already existing site and id_in_site must fail
         with pytest.raises(
             IntegrityError,
             match=r"duplicate key value violates unique constraint \"article_site_id_in_site_key\"",
         ):
             session.commit()
+
+        # Check that nothing is written
+        session.rollback()
+        num_articles = session.exec(select(func.count(Article.page_id))).one()
+        assert num_articles == 0
 
 
 def test_update_article(create_and_drop_tables, engine):

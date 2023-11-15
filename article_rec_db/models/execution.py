@@ -1,7 +1,17 @@
+from enum import StrEnum
+
 from sqlmodel import Relationship
 
-from .base import AutoUUIDPrimaryKey, CreationTracked, SQLModel
-from .helpers import StrategyType
+from .helpers import AutoUUIDPrimaryKey, CreationTracked, SQLModel
+
+
+class StrategyType(StrEnum):
+    POPULARITY = "popularity"
+    COLLABORATIVE_FILTERING_ITEM_BASED = "collaborative_filtering_item_based"
+    SEMANTIC_SIMILARITY = "semantic_similarity"
+
+
+DEFAULT_STRATEGIES = {StrategyType.POPULARITY}
 
 
 class Execution(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
@@ -10,6 +20,7 @@ class Execution(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
 
     strategy: StrategyType
+    recommendation_source_target_interchangeable: bool
 
     # An execution has multiple embeddings
     embeddings: list["Embedding"] = Relationship(back_populates="execution")  # type: ignore

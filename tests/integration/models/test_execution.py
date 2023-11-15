@@ -7,7 +7,7 @@ from article_rec_db.models import Execution, StrategyType
 
 
 def test_add_execution(create_and_drop_tables, engine):
-    execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY)
+    execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY, recommendation_source_target_interchangeable=True)
 
     with Session(engine) as session:
         session.add(execution)

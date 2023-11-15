@@ -32,7 +32,9 @@ def test_add_embedding(create_and_drop_tables, engine, rng):
         published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(strategy=StrategyType.COLLABORATIVE_FILTERING_ITEM_BASED)
+    execution = Execution(
+        strategy=StrategyType.COLLABORATIVE_FILTERING_ITEM_BASED, recommendation_source_target_interchangeable=True
+    )
     embedding_vector = rng.uniform(size=MAX_EMBEDDING_DIMENSIONS).tolist()
     embedding = Embedding(
         article=article,
@@ -92,7 +94,7 @@ def test_select_embeddings_knn(create_and_drop_tables, engine, rng):
         published_at=datetime.utcnow(),
         page=page3,
     )
-    execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY)
+    execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY, recommendation_source_target_interchangeable=True)
 
     vector1 = rng.uniform(low=0, high=0.5, size=MAX_EMBEDDING_DIMENSIONS)
     vector2 = vector1 * 2  # cosine similarity to vector1 should be 1

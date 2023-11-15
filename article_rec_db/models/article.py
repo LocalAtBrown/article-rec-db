@@ -1,13 +1,13 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
-from sqlalchemy.orm import validates as sa_validates
+from sqlalchemy import event
 from sqlmodel import Column, Field, Relationship, String, UniqueConstraint
 
 from article_rec_db.sites import SiteName
 
-from .base import SQLModel, UpdateTracked
+from .helpers import SQLModel, UpdateTracked
 from .page import Page
 
 
@@ -39,9 +39,11 @@ class Article(SQLModel, UpdateTracked, table=True):
         sa_relationship_kwargs={"primaryjoin": "Recommendation.target_article_id==Article.page_id", "lazy": "joined"},
     )
 
-    @sa_validates("page")  # type: ignore
-    def page_is_not_excluded(self, key: str, page: Page) -> Page:
+
+@event.listens_for(Article, "before_insert")
+def validate_page_is_not_excluded(mapper: Any, connection: Any, target: Article) -> None:
+    # If page is none, the foreign key constraint will throw; see the test_article_without_page test
+    if target.page is not None:
         assert (
-            page.article_exclude_reason is None
+            target.page.article_exclude_reason is None
         ), "Page has a non-null article_exclude_reason, so it cannot be added as an article"
-        return page

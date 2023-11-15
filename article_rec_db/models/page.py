@@ -1,11 +1,18 @@
+from enum import StrEnum
 from typing import Annotated
 from uuid import UUID, uuid4
 
 from pydantic import HttpUrl
 from sqlmodel import Column, Field, Relationship, String
 
-from .base import AutoUUIDPrimaryKey, SQLModel, UpdateTracked
-from .helpers import ArticleExcludeReason
+from .helpers import AutoUUIDPrimaryKey, SQLModel, UpdateTracked
+
+
+class ArticleExcludeReason(StrEnum):
+    NOT_ARTICLE = "not_article"
+    NOT_IN_HOUSE_ARTICLE = "not_in_house_article"
+    TEST_ARTICLE = "test_article"
+    HAS_EXCLUDED_TAG = "has_excluded_tag"
 
 
 class Page(SQLModel, AutoUUIDPrimaryKey, UpdateTracked, table=True):
