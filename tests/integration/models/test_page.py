@@ -3,7 +3,7 @@ from uuid import UUID
 
 import pytest
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Session
+from sqlmodel import Session, func, select
 
 from article_rec_db.models import ArticleExcludeReason, Page
 
@@ -45,6 +45,11 @@ def test_add_pages_duplicate_url(create_and_drop_tables, engine):
             match=r"duplicate key value violates unique constraint \"page_url_key\"",
         ):
             session.commit()
+
+        # Check that only page 1 is written
+        session.rollback()
+        num_pages = session.exec(select(func.count(Page.id))).one()
+        assert num_pages == 1
 
 
 def test_update_page(create_and_drop_tables, engine):

@@ -156,8 +156,9 @@ def test_add_articles_duplicate_site_and_id_in_site(create_and_drop_tables, engi
 
     with Session(engine) as session:
         session.add(article1)
-        session.add(article2)
+        session.commit()
 
+        session.add(article2)
         # Since the combination of site and id_in_site is unique, adding an article with an already existing site and id_in_site must fail
         with pytest.raises(
             IntegrityError,
@@ -165,10 +166,10 @@ def test_add_articles_duplicate_site_and_id_in_site(create_and_drop_tables, engi
         ):
             session.commit()
 
-        # Check that nothing is written
+        # Check that only 1 article is written
         session.rollback()
         num_articles = session.exec(select(func.count(Article.page_id))).one()
-        assert num_articles == 0
+        assert num_articles == 1
 
 
 def test_update_article(create_and_drop_tables, engine):

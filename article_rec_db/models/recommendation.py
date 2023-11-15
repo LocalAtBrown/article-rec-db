@@ -25,8 +25,8 @@ class Recommendation(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     supposed to be used as a fallback for any source.
     """
 
-    # Unique constraint and not primary key constraint because source_article_id can be null
-    __table_args__ = (UniqueConstraint("execution_id", "source_article_id", "target_article_id"),)
+    # Unique constraint on execution_id and target_article_id, since we don't want to record the same recommendation twice
+    __table_args__ = (UniqueConstraint("execution_id", "target_article_id"),)
 
     execution_id: Annotated[UUID, Field(foreign_key="execution.id")]
     source_article_id: Annotated[Optional[UUID], Field(foreign_key="article.page_id")]
@@ -56,7 +56,10 @@ class Recommendation(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
 def validate_source_id_lower_then_target_id_when_interchangeable(
     mapper: Any, connection: Any, target: Recommendation
 ) -> None:
-    if target.execution.recommendation_source_target_interchangeable is True and target.source_article_id is not None:
+    if target.execution.recommendation_source_target_interchangeable is True:
+        assert (
+            target.source_article_id is not None
+        ), "Source article ID must be non-null when source and target are interchangeable."
         assert target.source_article_id < target.target_article_id, (
             "Source article ID must be lower than target article ID when source and target are interchangeable. "
             "This is a convention to make sure that the same recommendation is not recorded twice."
