@@ -1,9 +1,19 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Optional
+from uuid import UUID, uuid4
 
-from sqlmodel import Field, SQLModel
+from pydantic import BaseModel
+from sqlmodel import Column, DateTime, Field, SQLModel  # noqa: F401
 
 
-class TimestampTrackedModel(SQLModel, table=False):
+# Common fields as Pydantic model mixins
+class AutoUUIDPrimaryKey(BaseModel):
+    id: Annotated[UUID, Field(default_factory=uuid4, primary_key=True)]
+
+
+class CreationTracked(BaseModel):
     db_created_at: Annotated[datetime, Field(default_factory=datetime.utcnow)]
-    db_updated_at: datetime | None = None
+
+
+class UpdateTracked(CreationTracked):
+    db_updated_at: Annotated[Optional[datetime], Field(sa_column=Column(DateTime, onupdate=datetime.utcnow))]

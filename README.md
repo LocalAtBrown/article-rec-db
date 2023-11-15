@@ -48,6 +48,8 @@ To generate a new revision after you've updated the models:
 
 Similar to database management, we let our CI/CD handle Step 3.
 
+_Note to LNL devs: Our automated deployment process will run the Terraform changes first, then the Alembic changes. So, for example, using Terraform to create a new database and Alembic to create a new table in that database will work in just one PR, but creating a new table with Alembic and using Terraform to grant a role access to that table won't. Best to divide changes into atomic units, each handled by a single PR._
+
 ## Development
 
 This project uses [Poetry](https://python-poetry.org/) to manage dependencies. It also helps with pinning dependency and python
