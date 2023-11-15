@@ -11,7 +11,10 @@ class StrategyType(StrEnum):
     SEMANTIC_SIMILARITY = "semantic_similarity"
 
 
-DEFAULT_STRATEGIES = {StrategyType.POPULARITY}
+class StrategyRecommendationType(StrEnum):
+    DEFAULT_AKA_NO_SOURCE = "default_aka_no_source"
+    SOURCE_TARGET_INTERCHANGEABLE = "source_target_interchangeable"  # This is where either S -> T or T -> S is saved to save space, since one recommendation goes both ways
+    SOURCE_TARGET_NOT_INTERCHANGEABLE = "source_target_not_interchangeable"
 
 
 class Execution(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
@@ -20,7 +23,7 @@ class Execution(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
 
     strategy: StrategyType
-    recommendation_source_target_interchangeable: bool
+    strategy_recommendation_type: StrategyRecommendationType
 
     # An execution has multiple embeddings
     embeddings: list["Embedding"] = Relationship(back_populates="execution")  # type: ignore

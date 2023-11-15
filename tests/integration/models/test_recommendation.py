@@ -5,7 +5,14 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import Article, Execution, Page, Recommendation, StrategyType
+from article_rec_db.models import (
+    Article,
+    Execution,
+    Page,
+    Recommendation,
+    StrategyRecommendationType,
+    StrategyType,
+)
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
@@ -21,7 +28,9 @@ def test_add_default_recommendation(create_and_drop_tables, engine):
         published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(strategy=StrategyType.POPULARITY, recommendation_source_target_interchangeable=False)
+    execution = Execution(
+        strategy=StrategyType.POPULARITY, strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE
+    )
     recommendation = Recommendation(execution=execution, target_article=article, score=0.8)
 
     with Session(engine) as session:
@@ -58,7 +67,9 @@ def test_add_default_recommendation_with_nonnull_source_id(create_and_drop_table
         published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(strategy=StrategyType.POPULARITY, recommendation_source_target_interchangeable=False)
+    execution = Execution(
+        strategy=StrategyType.POPULARITY, strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE
+    )
     recommendation = Recommendation(execution=execution, source_article=article, target_article=article, score=1)
 
     with Session(engine) as session:
@@ -66,7 +77,7 @@ def test_add_default_recommendation_with_nonnull_source_id(create_and_drop_table
 
         with pytest.raises(
             AssertionError,
-            match=r"Source article ID must be empty when execution strategy is in the list of default strategies",
+            match=r"Source article ID must be empty when execution strategy's recommendation type is default",
         ):
             session.commit()
 
@@ -103,7 +114,10 @@ def test_add_recommendation_source_target_interchangeable(create_and_drop_tables
         page=page2,
     )
 
-    execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY, recommendation_source_target_interchangeable=True)
+    execution = Execution(
+        strategy=StrategyType.SEMANTIC_SIMILARITY,
+        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    )
 
     # Article 1 has a lower ID than article 2, so this is correct
     recommendation = Recommendation(execution=execution, source_article=article1, target_article=article2, score=0.9)
@@ -150,7 +164,10 @@ def test_add_recommendation_source_target_interchangeable_no_source(create_and_d
         page=page,
     )
 
-    execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY, recommendation_source_target_interchangeable=True)
+    execution = Execution(
+        strategy=StrategyType.SEMANTIC_SIMILARITY,
+        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    )
     recommendation = Recommendation(execution=execution, target_article=article, score=0.9)
 
     with Session(engine) as session:
@@ -195,7 +212,10 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
         page=page2,
     )
 
-    execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY, recommendation_source_target_interchangeable=True)
+    execution = Execution(
+        strategy=StrategyType.SEMANTIC_SIMILARITY,
+        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    )
     # Article 2 has a larger ID than article 1, so this is incorrect
     recommendation = Recommendation(execution=execution, source_article=article2, target_article=article1, score=0.9)
 
@@ -241,7 +261,10 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
         page=page2,
     )
 
-    execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY, recommendation_source_target_interchangeable=True)
+    execution = Execution(
+        strategy=StrategyType.SEMANTIC_SIMILARITY,
+        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    )
     recommendation = Recommendation(execution=execution, score=0.9)
     # Article 2 has a larger ID than article 1, so this is incorrect
     article1.recommendations_where_this_is_target.append(recommendation)
@@ -274,7 +297,9 @@ def test_add_recommendation_invalid_score(create_and_drop_tables, engine):
         published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(strategy=StrategyType.POPULARITY, recommendation_source_target_interchangeable=False)
+    execution = Execution(
+        strategy=StrategyType.POPULARITY, strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE
+    )
     recommendation = Recommendation(execution=execution, target_article=article, score=1.1)
 
     with Session(engine) as session:
@@ -301,7 +326,10 @@ def test_add_recommendations_duplicate(create_and_drop_tables, engine):
         published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(strategy=StrategyType.POPULARITY, recommendation_source_target_interchangeable=False)
+    execution = Execution(
+        strategy=StrategyType.POPULARITY,
+        strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE,
+    )
     recommendation1 = Recommendation(execution=execution, target_article=article, score=0.8)
     recommendation2 = Recommendation(execution=execution, target_article=article, score=0.8)
 
