@@ -39,7 +39,7 @@ class Article(SQLModel, UpdateTracked, table=True):
         sa_relationship_kwargs={"primaryjoin": "Recommendation.target_article_id==Article.page_id", "lazy": "joined"},
     )
 
-    @sa_validates("page")
+    @sa_validates("page")  # type: ignore
     def page_is_not_excluded(self, key: str, page: Page) -> Page:
         assert (
             page.article_exclude_reason is None
