@@ -24,7 +24,7 @@ class Article(SQLModel, UpdateTracked, table=True):
     page: Page = Relationship(back_populates="article")
 
     # An article can have zero or more embeddings
-    embeddings: list["Embedding"] = Relationship(
+    embeddings: list["Embedding"] = Relationship(  # type: ignore
         back_populates="article",
         sa_relationship_kwargs={
             # If an article is deleted, delete all embeddings associated with it. If an embedding is disassociated from this article, delete it
@@ -56,7 +56,7 @@ class Article(SQLModel, UpdateTracked, table=True):
     )
 
 
-@event.listens_for(Article, "before_insert")
+@event.listens_for(Article, "before_insert")  # type: ignore
 def validate_page_is_not_excluded(mapper: Any, connection: Any, target: Article) -> None:
     # If page is none, the foreign key constraint will throw; see the test_article_without_page test
     if target.page is not None:

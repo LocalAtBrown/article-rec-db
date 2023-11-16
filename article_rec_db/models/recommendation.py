@@ -52,7 +52,7 @@ class Recommendation(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     )
 
 
-@event.listens_for(Recommendation, "before_insert")
+@event.listens_for(Recommendation, "before_insert")  # type: ignore
 def validate_source_id_lower_then_target_id_when_interchangeable(
     mapper: Any, connection: Any, target: Recommendation
 ) -> None:
@@ -66,7 +66,7 @@ def validate_source_id_lower_then_target_id_when_interchangeable(
         )
 
 
-@event.listens_for(Recommendation, "before_insert")
+@event.listens_for(Recommendation, "before_insert")  # type: ignore
 def validate_source_id_empty_when_strategy_default(mapper: Any, connection: Any, target: Recommendation) -> None:
     if target.execution.strategy_recommendation_type == StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE:
         assert (
