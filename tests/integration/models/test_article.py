@@ -5,7 +5,17 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import Article, ArticleExcludeReason, Page
+from article_rec_db.models import (
+    MAX_EMBEDDING_DIMENSIONS,
+    Article,
+    ArticleExcludeReason,
+    Embedding,
+    Execution,
+    Page,
+    Recommendation,
+    StrategyRecommendationType,
+    StrategyType,
+)
 from article_rec_db.sites import AFRO_LA, DALLAS_FREE_PRESS
 
 
@@ -197,3 +207,79 @@ def test_update_article(create_and_drop_tables, engine):
 
         # Upon update, db_updated_at should be set
         assert isinstance(article.db_updated_at, datetime)
+
+
+def test_delete_article(create_and_drop_tables, engine):
+    page_id1 = UUID(int=1)
+    page_id2 = UUID(int=2)
+    page1 = Page(
+        id=page_id1,
+        url="https://dallasfreepress.com/example-article-1/",
+        article_exclude_reason=None,
+    )
+    page2 = Page(
+        id=page_id2,
+        url="https://dallasfreepress.com/example-article-2/",
+        article_exclude_reason=None,
+    )
+    article1 = Article(
+        site=DALLAS_FREE_PRESS.name,
+        id_in_site="1234",
+        title="Example Article 1",
+        published_at=datetime.utcnow(),
+        page=page1,
+    )
+    article2 = Article(
+        site=DALLAS_FREE_PRESS.name,
+        id_in_site="2345",
+        title="Example Article 2",
+        published_at=datetime.utcnow(),
+        page=page2,
+    )
+
+    execution = Execution(
+        strategy=StrategyType.SEMANTIC_SIMILARITY,
+        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    )
+    embedding1 = Embedding(article=article1, execution=execution, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
+    embedding2 = Embedding(article=article2, execution=execution, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)
+    recommendation = Recommendation(execution=execution, source_article=article1, target_article=article2, score=0.9)
+
+    with Session(engine) as session:
+        session.add(embedding1)
+        session.add(embedding2)
+        session.add(recommendation)
+        session.commit()
+
+        # Check that everything is written
+        assert session.exec(select(func.count(Page.id))).one() == 2
+        assert session.exec(select(func.count(Article.page_id))).one() == 2
+        assert session.exec(select(func.count(Execution.id))).one() == 1
+        assert session.exec(select(func.count(Embedding.id))).one() == 2
+        assert session.exec(select(func.count(Recommendation.id))).one() == 1
+        assert len(article2.recommendations_where_this_is_target) == 1
+
+        # Now delete Article 1
+        article1 = session.exec(select(Article).where(Article.page_id == page_id1)).unique().one()
+        session.delete(article1)
+        session.commit()
+
+        # Check pages
+        assert session.exec(select(func.count(Page.id))).one() == 2
+        page1 = session.exec(select(Page).where(Page.id == page_id1)).one()
+        assert page1.article == []
+
+        # Check articles
+        assert session.exec(select(Article).where(Article.page_id == page_id1)).one_or_none() is None
+        article2 = session.exec(select(Article).where(Article.page_id == page_id2)).unique().one()
+        assert len(article2.recommendations_where_this_is_target) == 0
+
+        # Check executions
+        assert session.exec(select(func.count(Execution.id))).one() == 1
+
+        # Check embeddings
+        assert session.exec(select(func.count(Embedding.id))).one() == 1
+        assert session.exec(select(Embedding).where(Embedding.article_id == page_id1)).one_or_none() is None
+
+        # Check recommendations
+        assert session.exec(select(func.count(Recommendation.id))).one() == 0

@@ -24,7 +24,13 @@ class Article(SQLModel, UpdateTracked, table=True):
     page: Page = Relationship(back_populates="article")
 
     # An article can have zero or more embeddings
-    embeddings: list["Embedding"] = Relationship(back_populates="article")  # type: ignore
+    embeddings: list["Embedding"] = Relationship(
+        back_populates="article",
+        sa_relationship_kwargs={
+            # If an article is deleted, delete all embeddings associated with it. If an embedding is disassociated from this article, delete it
+            "cascade": "all, delete-orphan"
+        },
+    )
 
     # An article can be the target of one or more default recommendations, and the source of zero or more recommendations
     # Typically, it's advised to combine these two lists to get to a final list of recommendations w.r.t. to an article, especially
@@ -32,11 +38,21 @@ class Article(SQLModel, UpdateTracked, table=True):
     # The sa_relationship_kwargs is here to avert the AmbiguousForeignKeyError, see: https://github.com/tiangolo/sqlmodel/issues/10#issuecomment-1537445078
     recommendations_where_this_is_source: list["Recommendation"] = Relationship(  # type: ignore
         back_populates="source_article",
-        sa_relationship_kwargs={"primaryjoin": "Recommendation.source_article_id==Article.page_id", "lazy": "joined"},
+        sa_relationship_kwargs={
+            "primaryjoin": "Recommendation.source_article_id==Article.page_id",
+            # If an article is deleted, delete all recommendations where it is the source. If a recommendation is disassociated from this source list, delete it
+            "cascade": "all, delete-orphan",
+            "lazy": "joined",
+        },
     )
     recommendations_where_this_is_target: list["Recommendation"] = Relationship(  # type: ignore
         back_populates="target_article",
-        sa_relationship_kwargs={"primaryjoin": "Recommendation.target_article_id==Article.page_id", "lazy": "joined"},
+        sa_relationship_kwargs={
+            "primaryjoin": "Recommendation.target_article_id==Article.page_id",
+            # If an article is deleted, delete all recommendations where it is the target. If a recommendation is disassociated from this target list, delete it
+            "cascade": "all, delete-orphan",
+            "lazy": "joined",
+        },
     )
 
 
