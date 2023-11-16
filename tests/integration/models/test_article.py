@@ -272,7 +272,7 @@ def test_delete_article(create_and_drop_tables, engine):
         # Check articles
         assert session.exec(select(Article).where(Article.page_id == page_id1)).one_or_none() is None
         article2 = session.exec(select(Article).where(Article.page_id == page_id2)).unique().one()
-        assert len(article2.recommendations_where_this_is_target) == 0
+        assert article2.recommendations_where_this_is_target == []
 
         # Check executions
         assert session.exec(select(func.count(Execution.id))).one() == 1
