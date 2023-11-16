@@ -41,9 +41,9 @@ jobs:
           poetry-version: 1.5.1
       - name: Install dependencies
         run: poetry config virtualenvs.create false && poetry install --no-interaction
-      - name: run mypy
+      - name: Run mypy
         run: mypy
-      - name: run model tests
+      - name: Run model tests on SQLModel-created mock DB
         run: pytest tests
-      - name: run alembic tests
+      - name: Run model tests on Alembic-created mock DB
         run: TYPE=alembic pytest tests
