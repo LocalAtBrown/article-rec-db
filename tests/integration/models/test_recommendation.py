@@ -18,7 +18,7 @@ from article_rec_db.models import (
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
-def test_add_default_recommendation(create_and_drop_tables, engine):
+def test_add_default_recommendation(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -57,7 +57,7 @@ def test_add_default_recommendation(create_and_drop_tables, engine):
         assert recommendation.target_article is article
 
 
-def test_add_default_recommendation_with_nonnull_source_id(create_and_drop_tables, engine):
+def test_add_default_recommendation_with_nonnull_source_id(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -89,7 +89,7 @@ def test_add_default_recommendation_with_nonnull_source_id(create_and_drop_table
         assert num_recommendations == 0
 
 
-def test_add_recommendation_source_target_interchangeable(create_and_drop_tables, engine):
+def test_add_recommendation_source_target_interchangeable(refresh_tables, engine):
     page1 = Page(
         id=UUID(int=1),  # smaller ID
         url="https://dallasfreepress.com/example-article-1/",
@@ -153,7 +153,7 @@ def test_add_recommendation_source_target_interchangeable(create_and_drop_tables
         assert session.query(func.count("*")).select_from(Recommendation).scalar() == 1
 
 
-def test_add_recommendation_source_target_interchangeable_no_source(create_and_drop_tables, engine):
+def test_add_recommendation_source_target_interchangeable_no_source(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -187,7 +187,7 @@ def test_add_recommendation_source_target_interchangeable_no_source(create_and_d
         assert num_recommendations == 0
 
 
-def test_add_recommendation_source_target_interchangeable_wrong_order_recommendation_side(create_and_drop_tables, engine):
+def test_add_recommendation_source_target_interchangeable_wrong_order_recommendation_side(refresh_tables, engine):
     page1 = Page(
         id=UUID(int=1),  # smaller ID
         url="https://dallasfreepress.com/example-article-1/",
@@ -236,7 +236,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
         assert num_recommendations == 0
 
 
-def test_add_recommendation_source_target_interchangeable_wrong_order_article_side(create_and_drop_tables, engine):
+def test_add_recommendation_source_target_interchangeable_wrong_order_article_side(refresh_tables, engine):
     page1 = Page(
         id=UUID(int=1),  # smaller ID
         url="https://dallasfreepress.com/example-article-1/",
@@ -287,7 +287,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
         assert num_recommendations == 0
 
 
-def test_add_recommendation_invalid_score(create_and_drop_tables, engine):
+def test_add_recommendation_invalid_score(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -316,7 +316,7 @@ def test_add_recommendation_invalid_score(create_and_drop_tables, engine):
         assert num_recommendations == 0
 
 
-def test_add_recommendations_duplicate(create_and_drop_tables, engine):
+def test_add_recommendations_duplicate(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -342,7 +342,7 @@ def test_add_recommendations_duplicate(create_and_drop_tables, engine):
         # Since the combination of execution and target_article is unique, adding a recommendation with an already existing execution and target_article must fail
         with pytest.raises(
             IntegrityError,
-            match=r"duplicate key value violates unique constraint \"recommendation_execution_id_target_article_id_key\"",
+            match=r"duplicate key value violates unique constraint \"recommendation_execution_target_unique\"",
         ):
             session.commit()
 
@@ -352,7 +352,7 @@ def test_add_recommendations_duplicate(create_and_drop_tables, engine):
         assert num_recommendations == 0
 
 
-def test_delete_recommendation(create_and_drop_tables, engine):
+def test_delete_recommendation(refresh_tables, engine):
     page_id1 = UUID(int=1)
     page_id2 = UUID(int=2)
     page1 = Page(

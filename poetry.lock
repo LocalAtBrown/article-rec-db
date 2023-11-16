@@ -20,6 +20,21 @@ typing-extensions = ">=4"
 tz = ["python-dateutil"]
 
 [[package]]
+name = "alembic-postgresql-enum"
+version = "0.3.0"
+description = "Alembic autogenerate support for creation, alteration and deletion of enums"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "alembic_postgresql_enum-0.3.0-py3-none-any.whl", hash = "sha256:f7fd19fcce7ab1a2256f3a5f20cadb48b17f5ad592e64916b5813adf984d2e26"},
+    {file = "alembic_postgresql_enum-0.3.0.tar.gz", hash = "sha256:d88802dbee8898e9257538c8c0c26c7602edf411ec19dd84275ed4a816afa383"},
+]
+
+[package.dependencies]
+alembic = ">=1.7"
+SQLAlchemy = ">=1.4"
+
+[[package]]
 name = "cfgv"
 version = "3.4.0"
 description = "Validate configuration and produce human readable error messages."
@@ -767,4 +782,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = ">= 3.9, <3.12"
-content-hash = "4511d1decf266dd97c32955f5e965113e650789685d514b71b34d5366e5e2934"
+content-hash = "bd1eab21f11830e3510079b00b9386b445a314faf8a885ae2580c1e9498d7adf"

@@ -19,7 +19,7 @@ from article_rec_db.models import (
 from article_rec_db.sites import AFRO_LA, DALLAS_FREE_PRESS
 
 
-def test_add_article_with_page(create_and_drop_tables, engine):
+def test_add_article_with_page(refresh_tables, engine):
     # This is how we would add a page that is also an article
     page = Page(
         url="https://dallasfreepress.com/example-article/",
@@ -59,7 +59,7 @@ def test_add_article_with_page(create_and_drop_tables, engine):
         assert len(article.recommendations_where_this_is_target) == 0
 
 
-def test_add_article_without_page(create_and_drop_tables, engine):
+def test_add_article_without_page(refresh_tables, engine):
     article = Article(
         page_id=uuid4(),
         site=DALLAS_FREE_PRESS.name,
@@ -84,7 +84,7 @@ def test_add_article_without_page(create_and_drop_tables, engine):
         assert num_articles == 0
 
 
-def test_add_article_excluded_from_page_side(create_and_drop_tables, engine):
+def test_add_article_excluded_from_page_side(refresh_tables, engine):
     article = Article(
         site=AFRO_LA.name,
         id_in_site="1234",
@@ -112,7 +112,7 @@ def test_add_article_excluded_from_page_side(create_and_drop_tables, engine):
         assert num_articles == 0
 
 
-def test_add_article_excluded_from_article_side(create_and_drop_tables, engine):
+def test_add_article_excluded_from_article_side(refresh_tables, engine):
     page = Page(
         url="https://afrolanews.org/",
         article_exclude_reason=ArticleExcludeReason.NOT_ARTICLE,
@@ -139,7 +139,7 @@ def test_add_article_excluded_from_article_side(create_and_drop_tables, engine):
         assert num_articles == 0
 
 
-def test_add_articles_duplicate_site_and_id_in_site(create_and_drop_tables, engine):
+def test_add_articles_duplicate_site_and_id_in_site(refresh_tables, engine):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -172,7 +172,7 @@ def test_add_articles_duplicate_site_and_id_in_site(create_and_drop_tables, engi
         # Since the combination of site and id_in_site is unique, adding an article with an already existing site and id_in_site must fail
         with pytest.raises(
             IntegrityError,
-            match=r"duplicate key value violates unique constraint \"article_site_id_in_site_key\"",
+            match=r"duplicate key value violates unique constraint \"article_site_idinsite_unique\"",
         ):
             session.commit()
 
@@ -182,7 +182,7 @@ def test_add_articles_duplicate_site_and_id_in_site(create_and_drop_tables, engi
         assert num_articles == 1
 
 
-def test_update_article(create_and_drop_tables, engine):
+def test_update_article(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -209,7 +209,7 @@ def test_update_article(create_and_drop_tables, engine):
         assert isinstance(article.db_updated_at, datetime)
 
 
-def test_delete_article(create_and_drop_tables, engine):
+def test_delete_article(refresh_tables, engine):
     page_id1 = UUID(int=1)
     page_id2 = UUID(int=2)
     page1 = Page(

@@ -19,7 +19,7 @@ from article_rec_db.models import (
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
-def test_add_page_not_article(create_and_drop_tables, engine):
+def test_add_page_not_article(refresh_tables, engine):
     page = Page(
         url="https://afrolanews.org/",
         article_exclude_reason=ArticleExcludeReason.NOT_ARTICLE,
@@ -36,7 +36,7 @@ def test_add_page_not_article(create_and_drop_tables, engine):
         assert len(page.article) == 0
 
 
-def test_add_pages_duplicate_url(create_and_drop_tables, engine):
+def test_add_pages_duplicate_url(refresh_tables, engine):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -63,7 +63,7 @@ def test_add_pages_duplicate_url(create_and_drop_tables, engine):
         assert num_pages == 1
 
 
-def test_update_page(create_and_drop_tables, engine):
+def test_update_page(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -83,7 +83,7 @@ def test_update_page(create_and_drop_tables, engine):
         assert isinstance(page.db_updated_at, datetime)
 
 
-def test_delete_page(create_and_drop_tables, engine):
+def test_delete_page(refresh_tables, engine):
     page_id1 = UUID(int=1)
     page_id2 = UUID(int=2)
     page1 = Page(

@@ -16,7 +16,7 @@ from article_rec_db.models import (
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
-def test_add_execution(create_and_drop_tables, engine):
+def test_add_execution(refresh_tables, engine):
     execution = Execution(
         strategy=StrategyType.SEMANTIC_SIMILARITY,
         strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
@@ -33,7 +33,7 @@ def test_add_execution(create_and_drop_tables, engine):
         assert len(execution.recommendations) == 0
 
 
-def test_delete_execution(create_and_drop_tables, engine):
+def test_delete_execution(refresh_tables, engine):
     page_id1 = UUID(int=1)
     page_id2 = UUID(int=2)
     page1 = Page(

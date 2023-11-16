@@ -12,7 +12,7 @@ from .page import Page
 
 
 class Article(SQLModel, UpdateTracked, table=True):
-    __table_args__ = (UniqueConstraint("site", "id_in_site"),)
+    __table_args__ = (UniqueConstraint("site", "id_in_site", name="article_site_idinsite_unique"),)
 
     page_id: Annotated[UUID, Field(primary_key=True, foreign_key="page.id")]
     site: Annotated[SiteName, Field(sa_column=Column(String))]

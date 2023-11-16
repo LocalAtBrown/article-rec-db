@@ -43,5 +43,7 @@ jobs:
         run: poetry config virtualenvs.create false && poetry install --no-interaction
       - name: run mypy
         run: mypy
-      - name: run tests
+      - name: run model tests
         run: pytest tests
+      - name: run alembic tests
+        run: TYPE=alembic pytest tests

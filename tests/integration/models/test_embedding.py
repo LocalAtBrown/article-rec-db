@@ -23,7 +23,7 @@ def rng() -> np.random.Generator:
     return np.random.default_rng(42)
 
 
-def test_add_embedding(create_and_drop_tables, engine, rng):
+def test_add_embedding(refresh_tables, engine, rng):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -64,7 +64,7 @@ def test_add_embedding(create_and_drop_tables, engine, rng):
         assert embedding.execution is execution
 
 
-def test_select_embeddings_knn(create_and_drop_tables, engine, rng):
+def test_select_embeddings_knn(refresh_tables, engine, rng):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -148,7 +148,7 @@ def test_select_embeddings_knn(create_and_drop_tables, engine, rng):
         assert np.isclose(results[1][1], similarity_13).all()
 
 
-def test_delete_embedding(create_and_drop_tables, engine):
+def test_delete_embedding(refresh_tables, engine):
     page_id1 = UUID(int=1)
     page_id2 = UUID(int=2)
     page1 = Page(

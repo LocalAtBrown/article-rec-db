@@ -26,7 +26,9 @@ class Recommendation(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
 
     # Unique constraint on execution_id and target_article_id, since we don't want to record the same recommendation twice
-    __table_args__ = (UniqueConstraint("execution_id", "target_article_id"),)
+    __table_args__ = (
+        UniqueConstraint("execution_id", "target_article_id", name="recommendation_execution_target_unique"),
+    )
 
     execution_id: Annotated[UUID, Field(foreign_key="execution.id")]
     source_article_id: Annotated[Optional[UUID], Field(foreign_key="article.page_id")]
