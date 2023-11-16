@@ -6,7 +6,9 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, func, select
 
 from article_rec_db.models import (
+    MAX_EMBEDDING_DIMENSIONS,
     Article,
+    Embedding,
     Execution,
     Page,
     Recommendation,
@@ -348,3 +350,78 @@ def test_add_recommendations_duplicate(create_and_drop_tables, engine):
         session.rollback()
         num_recommendations = session.exec(select(func.count(Recommendation.id))).one()
         assert num_recommendations == 0
+
+
+def test_delete_recommendation(create_and_drop_tables, engine):
+    page_id1 = UUID(int=1)
+    page_id2 = UUID(int=2)
+    page1 = Page(
+        id=page_id1,
+        url="https://dallasfreepress.com/example-article-1/",
+        article_exclude_reason=None,
+    )
+    page2 = Page(
+        id=page_id2,
+        url="https://dallasfreepress.com/example-article-2/",
+        article_exclude_reason=None,
+    )
+    article1 = Article(
+        site=DALLAS_FREE_PRESS.name,
+        id_in_site="1234",
+        title="Example Article 1",
+        published_at=datetime.utcnow(),
+        page=page1,
+    )
+    article2 = Article(
+        site=DALLAS_FREE_PRESS.name,
+        id_in_site="2345",
+        title="Example Article 2",
+        published_at=datetime.utcnow(),
+        page=page2,
+    )
+
+    execution = Execution(
+        strategy=StrategyType.SEMANTIC_SIMILARITY,
+        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    )
+    embedding1 = Embedding(article=article1, execution=execution, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
+    embedding2 = Embedding(article=article2, execution=execution, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)
+    recommendation = Recommendation(execution=execution, source_article=article1, target_article=article2, score=0.9)
+
+    with Session(engine) as session:
+        session.add(embedding1)
+        session.add(embedding2)
+        session.add(recommendation)
+        session.commit()
+
+        # Check that everything is written
+        assert session.exec(select(func.count(Page.id))).one() == 2
+        assert session.exec(select(func.count(Article.page_id))).one() == 2
+        assert session.exec(select(func.count(Execution.id))).one() == 1
+        assert session.exec(select(func.count(Embedding.id))).one() == 2
+        assert session.exec(select(func.count(Recommendation.id))).one() == 1
+        assert len(article1.recommendations_where_this_is_source) == 1
+        assert len(article2.recommendations_where_this_is_target) == 1
+
+        # Now delete Recommendation 1
+        recommendation_id = recommendation.id
+        recommendation = session.exec(select(Recommendation).where(Recommendation.id == recommendation_id)).one()
+        session.delete(recommendation)
+        session.commit()
+
+        # Check pages
+        assert session.exec(select(func.count(Page.id))).one() == 2
+
+        # Check articles
+        assert session.exec(select(func.count(Article.page_id))).one() == 2
+        assert article1.recommendations_where_this_is_source == []
+        assert article2.recommendations_where_this_is_target == []
+
+        # Check executions
+        assert session.exec(select(func.count(Execution.id))).one() == 1
+
+        # Check embeddings
+        assert session.exec(select(func.count(Embedding.id))).one() == 2
+
+        # Check recommendations
+        assert session.exec(select(func.count(Recommendation.id))).one() == 0
