@@ -17,11 +17,3 @@ class CreationTracked(BaseModel):
 
 class UpdateTracked(CreationTracked):
     db_updated_at: Annotated[Optional[datetime], Field(sa_column=Column(DateTime, onupdate=datetime.utcnow))]
-
-
-class TableOperationError(Exception):
-    pass
-
-
-def forbid_update(mapper, connection, target) -> None:
-    raise TableOperationError(f"Updating records is forbidden on table {target.__tablename__}")
