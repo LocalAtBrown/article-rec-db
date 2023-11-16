@@ -302,18 +302,9 @@ def test_add_recommendation_invalid_score(refresh_tables, engine):
     execution = Execution(
         strategy=StrategyType.POPULARITY, strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE
     )
-    recommendation = Recommendation(execution=execution, target_article=article, score=1.1)
 
-    with Session(engine) as session:
-        session.add(recommendation)
-
-        with pytest.raises(IntegrityError, match=r"violates check constraint \"score_between_0_and_1\""):
-            session.commit()
-
-        # Check that nothing is written
-        session.rollback()
-        num_recommendations = session.exec(select(func.count(Recommendation.id))).one()
-        assert num_recommendations == 0
+    with pytest.raises(AssertionError, match=r"Score must be between 0 and 1"):
+        Recommendation(execution=execution, target_article=article, score=1.1)
 
 
 def test_add_recommendations_duplicate(refresh_tables, engine):
