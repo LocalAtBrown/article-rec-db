@@ -1,8 +1,9 @@
 from datetime import datetime
+from uuid import UUID
 
 import numpy as np
 import pytest
-from sqlmodel import Session, select
+from sqlmodel import Session, func, select
 
 from article_rec_db.models import (
     MAX_EMBEDDING_DIMENSIONS,
@@ -10,6 +11,8 @@ from article_rec_db.models import (
     Embedding,
     Execution,
     Page,
+    Recommendation,
+    StrategyRecommendationType,
     StrategyType,
 )
 from article_rec_db.sites import DALLAS_FREE_PRESS
@@ -20,7 +23,7 @@ def rng() -> np.random.Generator:
     return np.random.default_rng(42)
 
 
-def test_add_embedding(create_and_drop_tables, engine, rng):
+def test_add_embedding(refresh_tables, engine, rng):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -32,7 +35,10 @@ def test_add_embedding(create_and_drop_tables, engine, rng):
         published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(strategy=StrategyType.COLLABORATIVE_FILTERING_ITEM_BASED)
+    execution = Execution(
+        strategy=StrategyType.COLLABORATIVE_FILTERING_ITEM_BASED,
+        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    )
     embedding_vector = rng.uniform(size=MAX_EMBEDDING_DIMENSIONS).tolist()
     embedding = Embedding(
         article=article,
@@ -58,7 +64,7 @@ def test_add_embedding(create_and_drop_tables, engine, rng):
         assert embedding.execution is execution
 
 
-def test_select_embeddings_knn(create_and_drop_tables, engine, rng):
+def test_select_embeddings_knn(refresh_tables, engine, rng):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
         article_exclude_reason=None,
@@ -92,7 +98,10 @@ def test_select_embeddings_knn(create_and_drop_tables, engine, rng):
         published_at=datetime.utcnow(),
         page=page3,
     )
-    execution = Execution(strategy=StrategyType.SEMANTIC_SIMILARITY)
+    execution = Execution(
+        strategy=StrategyType.SEMANTIC_SIMILARITY,
+        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    )
 
     vector1 = rng.uniform(low=0, high=0.5, size=MAX_EMBEDDING_DIMENSIONS)
     vector2 = vector1 * 2  # cosine similarity to vector1 should be 1
@@ -137,3 +146,77 @@ def test_select_embeddings_knn(create_and_drop_tables, engine, rng):
         # Bottom result is article 3
         assert results[1][0] == embedding3.id
         assert np.isclose(results[1][1], similarity_13).all()
+
+
+def test_delete_embedding(refresh_tables, engine):
+    page_id1 = UUID(int=1)
+    page_id2 = UUID(int=2)
+    page1 = Page(
+        id=page_id1,
+        url="https://dallasfreepress.com/example-article-1/",
+        article_exclude_reason=None,
+    )
+    page2 = Page(
+        id=page_id2,
+        url="https://dallasfreepress.com/example-article-2/",
+        article_exclude_reason=None,
+    )
+    article1 = Article(
+        site=DALLAS_FREE_PRESS.name,
+        id_in_site="1234",
+        title="Example Article 1",
+        published_at=datetime.utcnow(),
+        page=page1,
+    )
+    article2 = Article(
+        site=DALLAS_FREE_PRESS.name,
+        id_in_site="2345",
+        title="Example Article 2",
+        published_at=datetime.utcnow(),
+        page=page2,
+    )
+
+    execution = Execution(
+        strategy=StrategyType.SEMANTIC_SIMILARITY,
+        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    )
+    embedding1 = Embedding(article=article1, execution=execution, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
+    embedding2 = Embedding(article=article2, execution=execution, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)
+    recommendation = Recommendation(execution=execution, source_article=article1, target_article=article2, score=0.9)
+
+    with Session(engine) as session:
+        session.add(embedding1)
+        session.add(embedding2)
+        session.add(recommendation)
+        session.commit()
+
+        # Check that everything is written
+        assert session.exec(select(func.count(Page.id))).one() == 2
+        assert session.exec(select(func.count(Article.page_id))).one() == 2
+        assert session.exec(select(func.count(Execution.id))).one() == 1
+        assert session.exec(select(func.count(Embedding.id))).one() == 2
+        assert session.exec(select(func.count(Recommendation.id))).one() == 1
+
+        # Now delete Embedding 1
+        embedding1_id = embedding1.id
+        embedding1 = session.exec(select(Embedding).where(Embedding.id == embedding1_id)).one()
+        session.delete(embedding1)
+        session.commit()
+
+        # Check pages
+        assert session.exec(select(func.count(Page.id))).one() == 2
+
+        # Check articles
+        assert session.exec(select(func.count(Article.page_id))).one() == 2
+        article1 = session.exec(select(Article).where(Article.page_id == page_id1)).unique().one()
+        assert article1.embeddings == []
+
+        # Check executions
+        assert session.exec(select(func.count(Execution.id))).one() == 1
+
+        # Check embeddings
+        assert session.exec(select(func.count(Embedding.id))).one() == 1
+        assert session.exec(select(Embedding).where(Embedding.article_id == page_id1)).one_or_none() is None
+
+        # Check recommendations
+        assert session.exec(select(func.count(Recommendation.id))).one() == 1

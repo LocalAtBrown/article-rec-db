@@ -43,7 +43,7 @@ update the databases. This is what alembic is for! (And notice the difference be
 To generate a new revision after you've updated the models:
 
 1. Run this from the root of the project: `DB_CONNECTION_STRING='postgresql://user:password@host:port/db_name' alembic revision --autogenerate -m "message"`. (There's a Poe task for this: run `poe rmtdiff -d db_name -m "message"`)
-2. Check the `/alembic/versions/` directory for the new revision and verify that it does what you want it to
+2. Check the `/alembic/versions/` directory for the new revision and verify that it does what you want it to. Run `TYPE=alembic poe test` to test models against a local DB initialized via Alembic, and resolve issues as needed.
 3. Run this from the root of the project: `DB_CONNECTION_STRING='postgresql://user:password@host:port/db_name' alembic upgrade head`. Note that you only need to generate the revision file (step 1) _once_ because we want the same content in each environment's database, but you do need to run the `upgrade head` command once _for each_ database (change the DB_NAME to the desired target). (There's a Poe task for this: run `poe rmtupgrade -d db_name`)
 
 Similar to database management, we let our CI/CD handle Step 3.
@@ -72,8 +72,9 @@ This is done with Poetry via the `poetry.lock` file.
 
 ### Run Code Format and Linting
 
-To manually run isort, black, and flake8 all in one go, simply run `poe format` or `pre-commit run --all-files`. Explore the `pre-commit` docs (linked above)
-to see more options.
+`pre-commit run --all-files` runs isort, black, and flake8 all in one go, and is also run on every commit.
+
+`poe format` does what `pre-commit run --all-files` does and also formats the Terraform code.
 
 ### Run Static Type Checking
 
@@ -84,15 +85,16 @@ specified in `pyproject.toml`.
 
 To update dependencies in your local environment, make changes to the `pyproject.toml` file then run `poetry update` from the root directory of the project.
 
+To update Terraform dependencies, make changes to `versions.tf` files as necessary.
+
 ### Run Tests
 
 To manually run rests, you need to have a Postgres instance running locally on port 5432. One way to do this
 is to run a Docker container, then run the tests while it is active.
 
-1. (If you don't already have the image locally) Run `docker pull postgres`
+1. (If you don't already have the image locally) Run `docker pull ankane/pgvector:v<version used in your remote db>`
 2. Run `docker run --rm --name postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_HOST_AUTH_METHOD=trust -p 127.0.0.1:5432:5432/tcp postgres`
-3. Run `DB_NAME=postgres pytest tests` from the root directory of the project. Explore the `pytest` docs (linked above)
-   to see more options.
+3. Run `pytest tests` from the root directory of the project. Explore the `pytest` docs (linked above)
 
 Note that if you decide to run the Postgres container with different credentials (a different password, port, etc.) or
 via a different method, you will likely need to update the test file to point to the correct Postgres instance.
@@ -101,3 +103,5 @@ Additionally, if you want to re-run the tests, you want to make sure you start o
 instance. If you run Postgres via Docker, you can simply `ctrl-C` to stop the image and start a new one.
 
 Steps 2 and 3 can be combined into one Poe task: `poe test`, which also stops the container after the tests are done, even if tests fail. In addition, you can also run `poe lclstart` to just start the container, and `poe lclstop` to stop it whenever you're done. `poe lclconnect` will connect you to the container via `psql` so you can poke around.
+
+`poe test`, by default, is equivalent to `TYPE=sqlmodel poe test`, which tests the models against a local DB initialized via SQLModel. You can also run `TYPE=alembic poe test` to test the models against a local DB initialized via Alembic. The first is more convenient and is good for development, the second reflects the production environment more closely and is good for testing Alembic revisions once you're about to submit a PR.

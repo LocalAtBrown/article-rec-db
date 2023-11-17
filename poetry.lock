@@ -20,6 +20,21 @@ typing-extensions = ">=4"
 tz = ["python-dateutil"]
 
 [[package]]
+name = "alembic-postgresql-enum"
+version = "0.3.0"
+description = "Alembic autogenerate support for creation, alteration and deletion of enums"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "alembic_postgresql_enum-0.3.0-py3-none-any.whl", hash = "sha256:f7fd19fcce7ab1a2256f3a5f20cadb48b17f5ad592e64916b5813adf984d2e26"},
+    {file = "alembic_postgresql_enum-0.3.0.tar.gz", hash = "sha256:d88802dbee8898e9257538c8c0c26c7602edf411ec19dd84275ed4a816afa383"},
+]
+
+[package.dependencies]
+alembic = ">=1.7"
+SQLAlchemy = ">=1.4"
+
+[[package]]
 name = "cfgv"
 version = "3.4.0"
 description = "Validate configuration and produce human readable error messages."
@@ -694,13 +709,13 @@ sqlcipher = ["sqlcipher3-binary"]
 
 [[package]]
 name = "sqlalchemy2-stubs"
-version = "0.0.2a36"
+version = "0.0.2a37"
 description = "Typing Stubs for SQLAlchemy 1.4"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "sqlalchemy2-stubs-0.0.2a36.tar.gz", hash = "sha256:1c820c176a50401b7b3fc1e25019703b2c0753fe99a79d7e19305146baf1f60f"},
-    {file = "sqlalchemy2_stubs-0.0.2a36-py3-none-any.whl", hash = "sha256:9b5b3eb263cdc649b6a5619d2c089b98290406027a01e1de171eeb98c38ce678"},
+    {file = "sqlalchemy2-stubs-0.0.2a37.tar.gz", hash = "sha256:619bd131f8ad7eeb88af8dfabb0e6ba07593db91868cdc49674d2cd4ca61e986"},
+    {file = "sqlalchemy2_stubs-0.0.2a37-py3-none-any.whl", hash = "sha256:43067e3f67bd16a7fb2b574ee696f7ed53bf60f3e73329cf234a7b4dd4d3816a"},
 ]
 
 [package.dependencies]
@@ -767,4 +782,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.0"
 python-versions = ">= 3.9, <3.12"
-content-hash = "4511d1decf266dd97c32955f5e965113e650789685d514b71b34d5366e5e2934"
+content-hash = "bd1eab21f11830e3510079b00b9386b445a314faf8a885ae2580c1e9498d7adf"

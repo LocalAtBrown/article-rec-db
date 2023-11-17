@@ -5,8 +5,8 @@ from pgvector.sqlalchemy import Vector  # type: ignore
 from sqlmodel import Column, Field, Relationship
 
 from .article import Article
-from .base import AutoUUIDPrimaryKey, CreationTracked, SQLModel
 from .execution import Execution
+from .helpers import AutoUUIDPrimaryKey, CreationTracked, SQLModel
 
 # The maximum number of dimensions that the vector can have. Vectors with fewer dimensions will be padded with zeros.
 MAX_DIMENSIONS = 384

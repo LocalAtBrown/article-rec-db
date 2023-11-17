@@ -8,13 +8,13 @@ __all__ = [
     "MAX_EMBEDDING_DIMENSIONS",
     "Execution",
     "Recommendation",
+    "StrategyRecommendationType",
 ]
 
 from .article import Article
-from .base import SQLModel
 from .embedding import MAX_DIMENSIONS as MAX_EMBEDDING_DIMENSIONS
 from .embedding import Embedding
-from .execution import Execution
-from .helpers import ArticleExcludeReason, StrategyType
-from .page import Page
+from .execution import Execution, StrategyRecommendationType, StrategyType
+from .helpers import SQLModel
+from .page import ArticleExcludeReason, Page
 from .recommendation import Recommendation

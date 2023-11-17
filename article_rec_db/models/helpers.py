@@ -1,14 +1,19 @@
-from enum import StrEnum
+from datetime import datetime
+from typing import Annotated, Optional
+from uuid import UUID, uuid4
+
+from pydantic import BaseModel
+from sqlmodel import Column, DateTime, Field, SQLModel  # noqa: F401
 
 
-class ArticleExcludeReason(StrEnum):
-    NOT_ARTICLE = "not_article"
-    NOT_IN_HOUSE_ARTICLE = "not_in_house_article"
-    TEST_ARTICLE = "test_article"
-    HAS_EXCLUDED_TAG = "has_excluded_tag"
+# Common fields as Pydantic model mixins
+class AutoUUIDPrimaryKey(BaseModel):
+    id: Annotated[UUID, Field(default_factory=uuid4, primary_key=True)]
 
 
-class StrategyType(StrEnum):
-    POPULARITY = "popularity"
-    COLLABORATIVE_FILTERING_ITEM_BASED = "collaborative_filtering_item_based"
-    SEMANTIC_SIMILARITY = "semantic_similarity"
+class CreationTracked(BaseModel):
+    db_created_at: Annotated[datetime, Field(default_factory=datetime.utcnow)]
+
+
+class UpdateTracked(CreationTracked):
+    db_updated_at: Annotated[Optional[datetime], Field(sa_column=Column(DateTime, onupdate=datetime.utcnow))]
