@@ -2,8 +2,14 @@ from typing import Annotated, Any, Optional
 from uuid import UUID
 
 from sqlalchemy import event
-from sqlalchemy.orm import validates
-from sqlmodel import Field, Relationship, UniqueConstraint
+from sqlmodel import (
+    CheckConstraint,
+    Column,
+    Field,
+    Float,
+    Relationship,
+    UniqueConstraint,
+)
 
 from .article import Article
 from .execution import Execution, StrategyRecommendationType
@@ -29,7 +35,9 @@ class Recommendation(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     target_article_id: Annotated[UUID, Field(foreign_key="article.page_id")]
 
     # Recommendation score, between 0 and 1. Top recs should have higher scores
-    score: float
+    score: Annotated[
+        float, Field(sa_column=Column(Float, CheckConstraint("score >= 0 AND score <= 1", name="score_between_0_and_1")))
+    ]
 
     # A recommendation always corresponds to a job execution
     execution: Execution = Relationship(back_populates="recommendations")
@@ -44,12 +52,6 @@ class Recommendation(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
         back_populates="recommendations_where_this_is_target",
         sa_relationship_kwargs={"foreign_keys": "[Recommendation.target_article_id]"},
     )
-
-    # Need to do this instead of a CheckConstraint because alembic doesn't support it
-    @validates("score")  # type: ignore
-    def score_must_be_between_0_and_1(self, key: str, score: float) -> float:
-        assert 0 <= score <= 1, f"Score must be between 0 and 1; got {score}"
-        return score
 
 
 @event.listens_for(Recommendation, "before_insert")  # type: ignore
