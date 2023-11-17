@@ -36,7 +36,12 @@ class Recommendation(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
 
     # Recommendation score, between 0 and 1. Top recs should have higher scores
     score: Annotated[
-        float, Field(sa_column=Column(Float, CheckConstraint("score >= 0 AND score <= 1", name="score_between_0_and_1")))
+        float,
+        Field(
+            sa_column=Column(
+                Float, CheckConstraint("score >= 0 AND score <= 1", name="recommendation_score_between_0_and_1")
+            )
+        ),
     ]
 
     # A recommendation always corresponds to a job execution

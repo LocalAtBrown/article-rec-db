@@ -307,7 +307,7 @@ def test_add_recommendation_invalid_score(refresh_tables, engine):
     with Session(engine) as session:
         session.add(recommendation)
 
-        with pytest.raises(IntegrityError, match=r"violates check constraint \"score_between_0_and_1\""):
+        with pytest.raises(IntegrityError, match=r"violates check constraint \"recommendation_score_between_0_and_1\""):
             session.commit()
 
         # Check that nothing is written
