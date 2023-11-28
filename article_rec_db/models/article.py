@@ -56,7 +56,7 @@ class Article(SQLModel, UpdateTracked, table=True):
     )
 
 
-@event.listens_for(Article, "before_insert")  # type: ignore
+@event.listens_for(Article, "before_insert")
 def validate_page_is_not_excluded(mapper: Any, connection: Any, target: Article) -> None:
     # If page is none, the foreign key constraint will throw; see the test_article_without_page test
     if target.page is not None:
