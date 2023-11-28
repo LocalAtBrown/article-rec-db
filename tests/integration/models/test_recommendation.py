@@ -150,7 +150,7 @@ def test_add_recommendation_source_target_interchangeable(refresh_tables, engine
         assert recommendation.target_article is article2
 
         # Check that recommendation is not recorded twice in the table
-        assert session.query(func.count("*")).select_from(Recommendation).scalar() == 1
+        assert session.exec(select(func.count("*")).select_from(Recommendation)).one() == 1
 
 
 def test_add_recommendation_source_target_interchangeable_no_source(refresh_tables, engine):
