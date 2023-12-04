@@ -24,7 +24,7 @@ def test_add_embedding(refresh_tables, engine, rng):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page,
     )
     execution = Execution(
@@ -70,21 +70,21 @@ def test_select_embeddings_knn(refresh_tables, engine, rng):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page1,
     )
     article2 = Article(
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article 2",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page2,
     )
     article3 = Article(
         site=DALLAS_FREE_PRESS.name,
         id_in_site="3456",
         title="Example Article 3",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page3,
     )
     execution = Execution(
@@ -152,14 +152,14 @@ def test_delete_embedding(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article 1",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page1,
     )
     article2 = Article(
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article 2",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page2,
     )
 

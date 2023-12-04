@@ -22,7 +22,7 @@ def test_add_article_with_page(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
-        published_at=article_published_at,
+        site_published_at=article_published_at,
         language=Language.SPANISH,
         page=page,
     )
@@ -44,7 +44,8 @@ def test_add_article_with_page(refresh_tables, engine):
         assert article.site == DALLAS_FREE_PRESS.name
         assert article.id_in_site == "1234"
         assert article.title == "Example Article"
-        assert article.published_at == article_published_at
+        assert article.site_published_at == article_published_at
+        assert article.site_updated_at is None
         assert article.language == Language.SPANISH
         assert article.is_in_house_content is True
         assert article.page is page
@@ -59,7 +60,7 @@ def test_add_article_without_page(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
     )
 
     with Session(engine) as session:
@@ -90,14 +91,14 @@ def test_add_articles_duplicate_site_and_id_in_site(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site=id_in_site,
         title="Example Article",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page1,
     )
     article2 = Article(
         site=DALLAS_FREE_PRESS.name,
         id_in_site=id_in_site,
         title="Example Article 2",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page2,
     )
 
@@ -127,7 +128,7 @@ def test_update_article(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page,
     )
 
@@ -139,10 +140,14 @@ def test_update_article(refresh_tables, engine):
         assert article.db_updated_at is None
 
         article.title = "Example Article with Title Updated"
+        site_updated_at = datetime.utcnow()
+        article.site_updated_at = site_updated_at
         session.commit()
 
         # Upon update, db_updated_at should be set
         assert isinstance(article.db_updated_at, datetime)
+        assert article.title == "Example Article with Title Updated"
+        assert article.site_updated_at == site_updated_at
 
 
 def test_delete_article(refresh_tables, engine):
@@ -160,14 +165,14 @@ def test_delete_article(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article 1",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page1,
     )
     article2 = Article(
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article 2",
-        published_at=datetime.utcnow(),
+        site_published_at=datetime.utcnow(),
         page=page2,
     )
 

@@ -23,13 +23,13 @@ class Language(StrEnum):
 
 class Article(UpdateTracked, table=True):
     __table_args__ = (UniqueConstraint("site", "id_in_site", name="article_site_idinsite_unique"),)
-    __mapper_args__ = {"polymorphic_identity": "article"}
 
     page_id: Annotated[UUID, Field(primary_key=True, foreign_key="page.id")]
     site: Annotated[SiteName, Field(sa_type=String)]
     id_in_site: str  # ID of article in the partner site's internal system
     title: str
-    published_at: datetime
+    site_published_at: datetime
+    site_updated_at: datetime | None
     language: Language = Language.ENGLISH
     is_in_house_content: bool = True
 
