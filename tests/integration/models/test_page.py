@@ -5,24 +5,15 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import (
-    MAX_EMBEDDING_DIMENSIONS,
-    Article,
-    ArticleExcludeReason,
-    Embedding,
-    Execution,
-    Page,
-    Recommendation,
-    StrategyRecommendationType,
-    StrategyType,
-)
+from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
+from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
+from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
 def test_add_page_not_article(refresh_tables, engine):
     page = Page(
-        url="https://afrolanews.org/",
-        article_exclude_reason=ArticleExcludeReason.NOT_ARTICLE,
+        url="https://afrolanews.org/",  # Home page, so not an article
     )
     with Session(engine) as session:
         session.add(page)
@@ -32,18 +23,15 @@ def test_add_page_not_article(refresh_tables, engine):
         assert isinstance(page.db_created_at, datetime)
         assert page.db_updated_at is None
         assert page.url == "https://afrolanews.org/"
-        assert page.article_exclude_reason == ArticleExcludeReason.NOT_ARTICLE
         assert len(page.article) == 0
 
 
 def test_add_pages_duplicate_url(refresh_tables, engine):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     with Session(engine) as session:
         session.add(page1)
@@ -66,7 +54,6 @@ def test_add_pages_duplicate_url(refresh_tables, engine):
 def test_update_page(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     with Session(engine) as session:
         session.add(page)
@@ -89,12 +76,10 @@ def test_delete_page(refresh_tables, engine):
     page1 = Page(
         id=page_id1,
         url="https://dallasfreepress.com/example-article-1/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         id=page_id2,
         url="https://dallasfreepress.com/example-article-2/",
-        article_exclude_reason=None,
     )
     article1 = Article(
         site=DALLAS_FREE_PRESS.name,

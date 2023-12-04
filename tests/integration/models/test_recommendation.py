@@ -5,23 +5,15 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import (
-    MAX_EMBEDDING_DIMENSIONS,
-    Article,
-    Embedding,
-    Execution,
-    Page,
-    Recommendation,
-    StrategyRecommendationType,
-    StrategyType,
-)
+from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
+from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
+from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
 def test_add_default_recommendation(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     article = Article(
         site=DALLAS_FREE_PRESS.name,
@@ -60,7 +52,6 @@ def test_add_default_recommendation(refresh_tables, engine):
 def test_add_default_recommendation_with_nonnull_source_id(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     article = Article(
         site=DALLAS_FREE_PRESS.name,
@@ -93,12 +84,10 @@ def test_add_recommendation_source_target_interchangeable(refresh_tables, engine
     page1 = Page(
         id=UUID(int=1),  # smaller ID
         url="https://dallasfreepress.com/example-article-1/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         id=UUID(int=2),  # larger ID
         url="https://dallasfreepress.com/example-article-2/",
-        article_exclude_reason=None,
     )
 
     article1 = Article(
@@ -156,7 +145,6 @@ def test_add_recommendation_source_target_interchangeable(refresh_tables, engine
 def test_add_recommendation_source_target_interchangeable_no_source(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     article = Article(
         site=DALLAS_FREE_PRESS.name,
@@ -191,12 +179,10 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
     page1 = Page(
         id=UUID(int=1),  # smaller ID
         url="https://dallasfreepress.com/example-article-1/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         id=UUID(int=2),  # larger ID
         url="https://dallasfreepress.com/example-article-2/",
-        article_exclude_reason=None,
     )
 
     article1 = Article(
@@ -240,12 +226,10 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
     page1 = Page(
         id=UUID(int=1),  # smaller ID
         url="https://dallasfreepress.com/example-article-1/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         id=UUID(int=2),  # larger ID
         url="https://dallasfreepress.com/example-article-2/",
-        article_exclude_reason=None,
     )
 
     article1 = Article(
@@ -290,7 +274,6 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
 def test_add_recommendation_invalid_score(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     article = Article(
         site=DALLAS_FREE_PRESS.name,
@@ -319,7 +302,6 @@ def test_add_recommendation_invalid_score(refresh_tables, engine):
 def test_add_recommendations_duplicate(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     article = Article(
         site=DALLAS_FREE_PRESS.name,
@@ -358,12 +340,10 @@ def test_delete_recommendation(refresh_tables, engine):
     page1 = Page(
         id=page_id1,
         url="https://dallasfreepress.com/example-article-1/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         id=page_id2,
         url="https://dallasfreepress.com/example-article-2/",
-        article_exclude_reason=None,
     )
     article1 = Article(
         site=DALLAS_FREE_PRESS.name,

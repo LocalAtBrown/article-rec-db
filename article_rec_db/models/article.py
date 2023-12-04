@@ -1,14 +1,24 @@
 from datetime import datetime
-from typing import Annotated, Any
+from enum import StrEnum
+from typing import Annotated
 from uuid import UUID
 
-from sqlalchemy import event
 from sqlmodel import Column, Field, Relationship, String, UniqueConstraint
 
 from article_rec_db.sites import SiteName
 
 from .helpers import SQLModel, UpdateTracked
 from .page import Page
+
+
+class Language(StrEnum):
+    """
+    Languages an article can have, in the IETF tag format
+    """
+
+    # Add more as needed
+    ENGLISH = "en"
+    SPANISH = "es"
 
 
 class Article(SQLModel, UpdateTracked, table=True):
@@ -19,6 +29,8 @@ class Article(SQLModel, UpdateTracked, table=True):
     id_in_site: str  # ID of article in the partner site's internal system
     title: str
     published_at: datetime
+    language: Language = Language.ENGLISH
+    is_in_house_content: bool = True
 
     # An article is always a page, but a page is not always an article
     page: Page = Relationship(back_populates="article")
@@ -54,12 +66,3 @@ class Article(SQLModel, UpdateTracked, table=True):
             "lazy": "joined",
         },
     )
-
-
-@event.listens_for(Article, "before_insert")
-def validate_page_is_not_excluded(mapper: Any, connection: Any, target: Article) -> None:
-    # If page is none, the foreign key constraint will throw; see the test_article_without_page test
-    if target.page is not None:
-        assert (
-            target.page.article_exclude_reason is None
-        ), "Page has a non-null article_exclude_reason, so it cannot be added as an article"

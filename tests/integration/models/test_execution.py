@@ -3,16 +3,9 @@ from uuid import UUID
 
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import (
-    MAX_EMBEDDING_DIMENSIONS,
-    Article,
-    Embedding,
-    Execution,
-    Page,
-    Recommendation,
-    StrategyRecommendationType,
-    StrategyType,
-)
+from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
+from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
+from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
@@ -39,12 +32,10 @@ def test_delete_execution(refresh_tables, engine):
     page1 = Page(
         id=page_id1,
         url="https://dallasfreepress.com/example-article-1/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         id=page_id2,
         url="https://dallasfreepress.com/example-article-2/",
-        article_exclude_reason=None,
     )
     article1 = Article(
         site=DALLAS_FREE_PRESS.name,

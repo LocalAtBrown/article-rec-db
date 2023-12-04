@@ -44,7 +44,7 @@ class Recommendation(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
         ),
     ]
 
-    # A recommendation always corresponds to a job execution
+    # A recommendation always corresponds to a task execution
     execution: Execution = Relationship(back_populates="recommendations")
 
     # A default recommendation always corresponds to a target article, but not necessarily to a source article
