@@ -16,6 +16,7 @@ class Language(StrEnum):
     Languages an article can have, in the IETF tag format
     """
 
+    # Add more as needed
     ENGLISH = "en"
     SPANISH = "es"
 
