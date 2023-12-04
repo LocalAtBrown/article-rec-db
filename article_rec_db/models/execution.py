@@ -2,7 +2,7 @@ from enum import StrEnum
 
 from sqlmodel import Relationship
 
-from .helpers import AutoUUIDPrimaryKey, CreationTracked, SQLModel
+from .helpers import AutoUUIDPrimaryKey, CreationTracked
 
 
 class StrategyType(StrEnum):
@@ -17,7 +17,7 @@ class StrategyRecommendationType(StrEnum):
     SOURCE_TARGET_NOT_INTERCHANGEABLE = "source_target_not_interchangeable"
 
 
-class Execution(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
+class Execution(AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
     Log of training job task executions, each with respect to a single strategy.
     """

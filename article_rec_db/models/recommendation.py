@@ -13,10 +13,10 @@ from sqlmodel import (
 
 from .article import Article
 from .execution import Execution, StrategyRecommendationType
-from .helpers import AutoUUIDPrimaryKey, CreationTracked, SQLModel
+from .helpers import AutoUUIDPrimaryKey, CreationTracked
 
 
-class Recommendation(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
+class Recommendation(AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
     Usual recommendations have a source article (i.e., the one the reader is reading)
     and a target article (i.e., the one the reader is recommended upon/after reading the source).

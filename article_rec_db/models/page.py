@@ -4,10 +4,10 @@ from uuid import UUID, uuid4
 from pydantic import HttpUrl
 from sqlmodel import Column, Field, Relationship, String
 
-from .helpers import AutoUUIDPrimaryKey, SQLModel, UpdateTracked
+from .helpers import AutoUUIDPrimaryKey, UpdateTracked
 
 
-class Page(SQLModel, AutoUUIDPrimaryKey, UpdateTracked, table=True):
+class Page(AutoUUIDPrimaryKey, UpdateTracked, table=True):
     id: Annotated[UUID, Field(default_factory=uuid4, primary_key=True)]
     url: Annotated[HttpUrl, Field(sa_column=Column(String, unique=True))]
 
