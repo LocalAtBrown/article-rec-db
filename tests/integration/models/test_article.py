@@ -5,16 +5,10 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import (
-    MAX_EMBEDDING_DIMENSIONS,
-    Article,
-    Embedding,
-    Execution,
-    Page,
-    Recommendation,
-    StrategyRecommendationType,
-    StrategyType,
-)
+from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
+from article_rec_db.models.article import Language
+from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
+from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
@@ -22,7 +16,6 @@ def test_add_article_with_page(refresh_tables, engine):
     # This is how we would add a page that is also an article
     page = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     article_published_at = datetime.utcnow()
     article = Article(
@@ -30,6 +23,7 @@ def test_add_article_with_page(refresh_tables, engine):
         id_in_site="1234",
         title="Example Article",
         published_at=article_published_at,
+        language=Language.SPANISH,
         page=page,
     )
 
@@ -51,6 +45,8 @@ def test_add_article_with_page(refresh_tables, engine):
         assert article.id_in_site == "1234"
         assert article.title == "Example Article"
         assert article.published_at == article_published_at
+        assert article.language == Language.SPANISH
+        assert article.is_in_house_content is True
         assert article.page is page
         assert len(article.embeddings) == 0
         assert len(article.recommendations_where_this_is_source) == 0
@@ -85,11 +81,9 @@ def test_add_article_without_page(refresh_tables, engine):
 def test_add_articles_duplicate_site_and_id_in_site(refresh_tables, engine):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         url="https://dallasfreepress.com/example-article-2/",
-        article_exclude_reason=None,
     )
     id_in_site = "1234"
     article1 = Article(
@@ -128,7 +122,6 @@ def test_add_articles_duplicate_site_and_id_in_site(refresh_tables, engine):
 def test_update_article(refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     article = Article(
         site=DALLAS_FREE_PRESS.name,
@@ -158,12 +151,10 @@ def test_delete_article(refresh_tables, engine):
     page1 = Page(
         id=page_id1,
         url="https://dallasfreepress.com/example-article-1/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         id=page_id2,
         url="https://dallasfreepress.com/example-article-2/",
-        article_exclude_reason=None,
     )
     article1 = Article(
         site=DALLAS_FREE_PRESS.name,

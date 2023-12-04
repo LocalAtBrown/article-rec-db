@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
@@ -10,6 +11,15 @@ from .helpers import SQLModel, UpdateTracked
 from .page import Page
 
 
+class Language(StrEnum):
+    """
+    Languages an article can have, in the IETF tag format
+    """
+
+    ENGLISH = "en"
+    SPANISH = "es"
+
+
 class Article(SQLModel, UpdateTracked, table=True):
     __table_args__ = (UniqueConstraint("site", "id_in_site", name="article_site_idinsite_unique"),)
 
@@ -18,7 +28,7 @@ class Article(SQLModel, UpdateTracked, table=True):
     id_in_site: str  # ID of article in the partner site's internal system
     title: str
     published_at: datetime
-
+    language: Language = Language.ENGLISH
     is_in_house_content: bool = True
 
     # An article is always a page, but a page is not always an article

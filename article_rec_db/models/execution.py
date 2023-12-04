@@ -19,7 +19,7 @@ class StrategyRecommendationType(StrEnum):
 
 class Execution(SQLModel, AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
-    Log of training job executions, each with respect to a single strategy.
+    Log of training job task executions, each with respect to a single strategy.
     """
 
     strategy: StrategyType

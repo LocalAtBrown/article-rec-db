@@ -5,16 +5,9 @@ import numpy as np
 import pytest
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import (
-    MAX_EMBEDDING_DIMENSIONS,
-    Article,
-    Embedding,
-    Execution,
-    Page,
-    Recommendation,
-    StrategyRecommendationType,
-    StrategyType,
-)
+from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
+from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
+from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
 from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
@@ -26,7 +19,6 @@ def rng() -> np.random.Generator:
 def test_add_embedding(refresh_tables, engine, rng):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     article = Article(
         site=DALLAS_FREE_PRESS.name,
@@ -67,15 +59,12 @@ def test_add_embedding(refresh_tables, engine, rng):
 def test_select_embeddings_knn(refresh_tables, engine, rng):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         url="https://dallasfreepress.com/example-article-2/",
-        article_exclude_reason=None,
     )
     page3 = Page(
         url="https://dallasfreepress.com/example-article-3/",
-        article_exclude_reason=None,
     )
     article1 = Article(
         site=DALLAS_FREE_PRESS.name,
@@ -154,12 +143,10 @@ def test_delete_embedding(refresh_tables, engine):
     page1 = Page(
         id=page_id1,
         url="https://dallasfreepress.com/example-article-1/",
-        article_exclude_reason=None,
     )
     page2 = Page(
         id=page_id2,
         url="https://dallasfreepress.com/example-article-2/",
-        article_exclude_reason=None,
     )
     article1 = Article(
         site=DALLAS_FREE_PRESS.name,
