@@ -2,14 +2,7 @@ from typing import Annotated, Any, Optional
 from uuid import UUID
 
 from sqlalchemy import event
-from sqlmodel import (
-    CheckConstraint,
-    Column,
-    Field,
-    Float,
-    Relationship,
-    UniqueConstraint,
-)
+from sqlmodel import CheckConstraint, Field, Relationship, UniqueConstraint
 
 from .article import Article
 from .execution import Execution, StrategyRecommendationType
@@ -37,11 +30,7 @@ class Recommendation(AutoUUIDPrimaryKey, CreationTracked, table=True):
     # Recommendation score, between 0 and 1. Top recs should have higher scores
     score: Annotated[
         float,
-        Field(
-            sa_column=Column(
-                Float, CheckConstraint("score >= 0 AND score <= 1", name="recommendation_score_between_0_and_1")
-            )
-        ),
+        Field(sa_column_args=[CheckConstraint("score >= 0 AND score <= 1", name="recommendation_score_between_0_and_1")]),
     ]
 
     # A recommendation always corresponds to a task execution

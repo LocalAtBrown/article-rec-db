@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
-from sqlmodel import Column, Field, Relationship, String, UniqueConstraint
+from sqlmodel import Field, Relationship, String, UniqueConstraint
 
 from article_rec_db.sites import SiteName
 
@@ -26,7 +26,7 @@ class Article(UpdateTracked, table=True):
     __mapper_args__ = {"polymorphic_identity": "article"}
 
     page_id: Annotated[UUID, Field(primary_key=True, foreign_key="page.id")]
-    site: Annotated[SiteName, Field(sa_column=Column(String))]
+    site: Annotated[SiteName, Field(sa_type=String)]
     id_in_site: str  # ID of article in the partner site's internal system
     title: str
     published_at: datetime
