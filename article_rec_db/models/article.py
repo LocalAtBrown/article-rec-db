@@ -3,11 +3,11 @@ from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
-from sqlmodel import Column, Field, Relationship, String, UniqueConstraint
+from sqlmodel import Field, Relationship, String, UniqueConstraint
 
 from article_rec_db.sites import SiteName
 
-from .helpers import SQLModel, UpdateTracked
+from .helpers import UpdateTracked
 from .page import Page
 
 
@@ -21,11 +21,12 @@ class Language(StrEnum):
     SPANISH = "es"
 
 
-class Article(SQLModel, UpdateTracked, table=True):
+class Article(UpdateTracked, table=True):
     __table_args__ = (UniqueConstraint("site", "id_in_site", name="article_site_idinsite_unique"),)
+    __mapper_args__ = {"polymorphic_identity": "article"}
 
     page_id: Annotated[UUID, Field(primary_key=True, foreign_key="page.id")]
-    site: Annotated[SiteName, Field(sa_column=Column(String))]
+    site: Annotated[SiteName, Field(sa_type=String)]
     id_in_site: str  # ID of article in the partner site's internal system
     title: str
     published_at: datetime
