@@ -8,7 +8,6 @@ from sqlmodel import Session, func, select
 from article_rec_db.models import (
     MAX_EMBEDDING_DIMENSIONS,
     Article,
-    ArticleExcludeReason,
     Embedding,
     Execution,
     Page,
@@ -21,8 +20,7 @@ from article_rec_db.sites import DALLAS_FREE_PRESS
 
 def test_add_page_not_article(refresh_tables, engine):
     page = Page(
-        url="https://afrolanews.org/",
-        article_exclude_reason=ArticleExcludeReason.NOT_ARTICLE,
+        url="https://afrolanews.org/",  # Home page, so not an article
     )
     with Session(engine) as session:
         session.add(page)
@@ -32,7 +30,6 @@ def test_add_page_not_article(refresh_tables, engine):
         assert isinstance(page.db_created_at, datetime)
         assert page.db_updated_at is None
         assert page.url == "https://afrolanews.org/"
-        assert page.article_exclude_reason == ArticleExcludeReason.NOT_ARTICLE
         assert len(page.article) == 0
 
 
