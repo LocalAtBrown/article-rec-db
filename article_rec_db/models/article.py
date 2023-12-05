@@ -27,7 +27,7 @@ class Article(UpdateTracked, table=True):
     # Page ID refers to the page table
     page_id: Annotated[UUID, Field(primary_key=True, foreign_key="page.id")]
 
-    # Site Name
+    # Site name
     site: Annotated[SiteName, Field(sa_type=String)]
     # ID of article in the partner site's internal system
     id_in_site: str
