@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
-from sqlmodel import Field, Relationship, String, UniqueConstraint
+from sqlmodel import Field, Relationship, String, Text, UniqueConstraint
 
 from article_rec_db.sites import SiteName
 
@@ -23,14 +23,31 @@ class Language(StrEnum):
 
 class Article(UpdateTracked, table=True):
     __table_args__ = (UniqueConstraint("site", "id_in_site", name="article_site_idinsite_unique"),)
-    __mapper_args__ = {"polymorphic_identity": "article"}
 
+    # Page ID refers to the page table
     page_id: Annotated[UUID, Field(primary_key=True, foreign_key="page.id")]
+
+    # Site name
     site: Annotated[SiteName, Field(sa_type=String)]
-    id_in_site: str  # ID of article in the partner site's internal system
+    # ID of article in the partner site's internal system
+    id_in_site: str
+
+    # Title/headline
     title: str
-    published_at: datetime
+    # Description/summary
+    description: str | None
+    # Full text of article; might also include (sanitized) HTML tags
+    content: Annotated[str, Field(sa_type=Text)]
+
+    # When the article was published on the partner site
+    site_published_at: datetime
+    # When the article was last updated on the partner site
+    site_updated_at: datetime | None
+
+    # Language of the article
     language: Language = Language.ENGLISH
+
+    # Whether the article is in-house content or not (e.g., republished from another source)
     is_in_house_content: bool = True
 
     # An article is always a page, but a page is not always an article
