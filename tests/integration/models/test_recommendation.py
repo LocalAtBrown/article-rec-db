@@ -19,6 +19,7 @@ def test_add_default_recommendation(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page,
     )
@@ -57,6 +58,7 @@ def test_add_default_recommendation_with_nonnull_source_id(refresh_tables, engin
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page,
     )
@@ -94,6 +96,7 @@ def test_add_recommendation_source_target_interchangeable(refresh_tables, engine
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page1,
     )
@@ -101,6 +104,7 @@ def test_add_recommendation_source_target_interchangeable(refresh_tables, engine
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article 2",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page2,
     )
@@ -150,6 +154,7 @@ def test_add_recommendation_source_target_interchangeable_no_source(refresh_tabl
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page,
     )
@@ -189,6 +194,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page1,
     )
@@ -196,6 +202,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article 2",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page2,
     )
@@ -236,6 +243,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page1,
     )
@@ -243,6 +251,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article 2",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page2,
     )
@@ -279,6 +288,7 @@ def test_add_recommendation_invalid_score(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page,
     )
@@ -307,6 +317,7 @@ def test_add_recommendations_duplicate(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page,
     )
@@ -349,6 +360,7 @@ def test_delete_recommendation(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article 1",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page1,
     )
@@ -356,6 +368,7 @@ def test_delete_recommendation(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article 2",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page2,
     )

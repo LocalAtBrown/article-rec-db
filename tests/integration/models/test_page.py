@@ -85,6 +85,7 @@ def test_delete_page(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article 1",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page1,
     )
@@ -92,6 +93,7 @@ def test_delete_page(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article 2",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page2,
     )

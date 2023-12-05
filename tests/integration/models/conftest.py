@@ -3,7 +3,7 @@ from collections.abc import Generator
 from enum import StrEnum
 
 import pytest
-from sqlalchemy.future.engine import Engine, create_engine
+from sqlalchemy.engine import Engine, create_engine
 from sqlmodel import text
 
 import alembic.command

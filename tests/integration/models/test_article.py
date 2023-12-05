@@ -22,6 +22,8 @@ def test_add_article_with_page(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
+        description="Description",
+        content="<p>Content</p>",
         site_published_at=article_published_at,
         language=Language.SPANISH,
         page=page,
@@ -44,6 +46,8 @@ def test_add_article_with_page(refresh_tables, engine):
         assert article.site == DALLAS_FREE_PRESS.name
         assert article.id_in_site == "1234"
         assert article.title == "Example Article"
+        assert article.description == "Description"
+        assert article.content == "<p>Content</p>"
         assert article.site_published_at == article_published_at
         assert article.site_updated_at is None
         assert article.language == Language.SPANISH
@@ -60,6 +64,7 @@ def test_add_article_without_page(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
     )
 
@@ -91,6 +96,7 @@ def test_add_articles_duplicate_site_and_id_in_site(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site=id_in_site,
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page1,
     )
@@ -98,6 +104,7 @@ def test_add_articles_duplicate_site_and_id_in_site(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site=id_in_site,
         title="Example Article 2",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page2,
     )
@@ -128,6 +135,7 @@ def test_update_article(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page,
     )
@@ -165,6 +173,7 @@ def test_delete_article(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="1234",
         title="Example Article 1",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page1,
     )
@@ -172,6 +181,7 @@ def test_delete_article(refresh_tables, engine):
         site=DALLAS_FREE_PRESS.name,
         id_in_site="2345",
         title="Example Article 2",
+        content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page2,
     )
