@@ -3,7 +3,7 @@ from enum import StrEnum
 from typing import Annotated
 from uuid import UUID
 
-from sqlmodel import Field, Relationship, String, UniqueConstraint
+from sqlmodel import Field, Relationship, String, Text, UniqueConstraint
 
 from article_rec_db.sites import SiteName
 
@@ -27,7 +27,9 @@ class Article(UpdateTracked, table=True):
     page_id: Annotated[UUID, Field(primary_key=True, foreign_key="page.id")]
     site: Annotated[SiteName, Field(sa_type=String)]
     id_in_site: str  # ID of article in the partner site's internal system
-    title: str
+    title: str  # Title/headline of article
+    description: str | None  # Description/summary of article
+    content: Annotated[str, Field(sa_type=Text)]  # Full text of article; might also include (sanitized) HTML tags
     site_published_at: datetime
     site_updated_at: datetime | None
     language: Language = Language.ENGLISH
