@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 import pytest
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, func, select
 
@@ -156,6 +157,93 @@ def test_update_article(refresh_tables, engine):
         assert isinstance(article.db_updated_at, datetime)
         assert article.title == "Example Article with Title Updated"
         assert article.site_updated_at == site_updated_at
+
+
+def test_upsert_article(refresh_tables, engine):
+    page = Page(
+        url="https://dallasfreepress.com/example-article/",
+    )
+    article_published_at = datetime.utcnow()
+    article = Article(
+        site=DALLAS_FREE_PRESS.name,
+        id_in_site="1234",
+        title="Example Article",
+        description="Description",
+        content="<p>Content</p>",
+        site_published_at=article_published_at,
+        language=Language.SPANISH,
+        page=page,
+    )
+
+    with Session(engine) as session:
+        session.add(page)
+        session.commit()
+
+        assert page.article[0] is article
+        assert article.db_updated_at is None
+
+    # Now, do an upsert
+    article_updated_at = datetime.utcnow()
+    article_updated = Article(
+        site=article.site,
+        id_in_site=article.id_in_site,
+        title="Example Article Updated",
+        description="Description Updated",
+        content="<p>Content Updated</p>",
+        site_published_at=article.site_published_at,
+        site_updated_at=article_updated_at,
+        language=article.language,
+    )
+
+    with Session(engine) as session:
+        stmt = (
+            insert(Article)
+            .values(
+                page_id=page.id,
+                site=article_updated.site,
+                id_in_site=article_updated.id_in_site,
+                title=article_updated.title,
+                description=article_updated.description,
+                content=article_updated.content,
+                site_published_at=article_updated.site_published_at,
+                site_updated_at=article_updated.site_updated_at,
+                language=article_updated.language,
+                is_in_house_content=article_updated.is_in_house_content,
+            )
+            .on_conflict_do_update(
+                index_elements=["site", "id_in_site"],
+                set_={
+                    "title": article_updated.title,
+                    "description": article_updated.description,
+                    "content": article_updated.content,
+                    "site_updated_at": article_updated.site_updated_at,
+                    "db_updated_at": datetime.utcnow(),
+                },
+            )
+        )
+        session.exec(stmt)
+        session.commit()
+
+        # Checks
+        assert len(session.exec(select(Article)).unique().all()) == 1
+
+        page = session.exec(select(Page).where(Page.id == page.id)).one()
+        article_updated = session.exec(select(Article).where(Article.page_id == page.id)).unique().one()
+
+        assert page.article[0].page_id == article_updated.page_id
+
+        assert article_updated.db_created_at == article.db_created_at
+        assert isinstance(article_updated.db_updated_at, datetime)
+        assert article_updated.page_id == article_updated.page.id == page.id == article.page_id
+        assert article_updated.site == DALLAS_FREE_PRESS.name
+        assert article_updated.id_in_site == "1234"
+        assert article_updated.title == "Example Article Updated"
+        assert article_updated.description == "Description Updated"
+        assert article_updated.content == "<p>Content Updated</p>"
+        assert article_updated.site_published_at == article_published_at
+        assert article_updated.site_updated_at == article_updated_at
+        assert article_updated.language == Language.SPANISH
+        assert article_updated.is_in_house_content is True
 
 
 def test_delete_article(refresh_tables, engine):
