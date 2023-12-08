@@ -4,10 +4,10 @@ from uuid import UUID, uuid4
 from pydantic import HttpUrl
 from sqlmodel import Field, Relationship, String
 
-from .helpers import AutoUUIDPrimaryKey, UpdateTracked
+from .helpers import AutoUUIDPrimaryKey, CreationTracked
 
 
-class Page(AutoUUIDPrimaryKey, UpdateTracked, table=True):
+class Page(AutoUUIDPrimaryKey, CreationTracked, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     url: HttpUrl = Field(sa_type=String, unique=True)
 
