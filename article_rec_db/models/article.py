@@ -1,11 +1,8 @@
 from datetime import datetime
 from enum import StrEnum
-from typing import Annotated
 from uuid import UUID
 
 from sqlmodel import Field, Relationship, String, Text, UniqueConstraint
-
-from article_rec_db.sites import SiteName
 
 from .helpers import UpdateTracked
 from .page import Page
@@ -25,10 +22,10 @@ class Article(UpdateTracked, table=True):
     __table_args__ = (UniqueConstraint("site", "id_in_site", name="article_site_idinsite_unique"),)
 
     # Page ID refers to the page table
-    page_id: Annotated[UUID, Field(primary_key=True, foreign_key="page.id")]
+    page_id: UUID = Field(primary_key=True, foreign_key="page.id")
 
     # Site name
-    site: Annotated[SiteName, Field(sa_type=String)]
+    site: str = Field(sa_type=String)
     # ID of article in the partner site's internal system
     id_in_site: str
 
@@ -37,7 +34,7 @@ class Article(UpdateTracked, table=True):
     # Description/summary
     description: str | None
     # Full text of article; might also include (sanitized) HTML tags
-    content: Annotated[str, Field(sa_type=Text)]
+    content: str = Field(sa_type=Text)
 
     # When the article was published on the partner site
     site_published_at: datetime

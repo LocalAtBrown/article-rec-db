@@ -16,6 +16,11 @@ def engine() -> Engine:
     return create_engine("postgresql://postgres:postgres@localhost:5432/postgres")
 
 
+@pytest.fixture(scope="session")
+def site_name() -> str:
+    return "example-site"
+
+
 class TestType(StrEnum):
     # Test models in a mock DB initialized with SQLModel.metadata.create_all(engine). Good for development
     SQLMODEL = "sqlmodel"

@@ -8,15 +8,14 @@ from sqlmodel import Session, func, select
 from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
 from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
 from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
-from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
-def test_add_default_recommendation(refresh_tables, engine):
+def test_add_default_recommendation(site_name, refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
     )
     article = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -50,12 +49,12 @@ def test_add_default_recommendation(refresh_tables, engine):
         assert recommendation.target_article is article
 
 
-def test_add_default_recommendation_with_nonnull_source_id(refresh_tables, engine):
+def test_add_default_recommendation_with_nonnull_source_id(site_name, refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
     )
     article = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -82,7 +81,7 @@ def test_add_default_recommendation_with_nonnull_source_id(refresh_tables, engin
         assert num_recommendations == 0
 
 
-def test_add_recommendation_source_target_interchangeable(refresh_tables, engine):
+def test_add_recommendation_source_target_interchangeable(site_name, refresh_tables, engine):
     page1 = Page(
         id=UUID(int=1),  # smaller ID
         url="https://dallasfreepress.com/example-article-1/",
@@ -93,7 +92,7 @@ def test_add_recommendation_source_target_interchangeable(refresh_tables, engine
     )
 
     article1 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -101,7 +100,7 @@ def test_add_recommendation_source_target_interchangeable(refresh_tables, engine
         page=page1,
     )
     article2 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="2345",
         title="Example Article 2",
         content="<p>Content</p>",
@@ -146,12 +145,12 @@ def test_add_recommendation_source_target_interchangeable(refresh_tables, engine
         assert session.exec(select(func.count("*")).select_from(Recommendation)).one() == 1
 
 
-def test_add_recommendation_source_target_interchangeable_no_source(refresh_tables, engine):
+def test_add_recommendation_source_target_interchangeable_no_source(site_name, refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
     )
     article = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -180,7 +179,9 @@ def test_add_recommendation_source_target_interchangeable_no_source(refresh_tabl
         assert num_recommendations == 0
 
 
-def test_add_recommendation_source_target_interchangeable_wrong_order_recommendation_side(refresh_tables, engine):
+def test_add_recommendation_source_target_interchangeable_wrong_order_recommendation_side(
+    site_name, refresh_tables, engine
+):
     page1 = Page(
         id=UUID(int=1),  # smaller ID
         url="https://dallasfreepress.com/example-article-1/",
@@ -191,7 +192,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
     )
 
     article1 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -199,7 +200,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
         page=page1,
     )
     article2 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="2345",
         title="Example Article 2",
         content="<p>Content</p>",
@@ -229,7 +230,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
         assert num_recommendations == 0
 
 
-def test_add_recommendation_source_target_interchangeable_wrong_order_article_side(refresh_tables, engine):
+def test_add_recommendation_source_target_interchangeable_wrong_order_article_side(site_name, refresh_tables, engine):
     page1 = Page(
         id=UUID(int=1),  # smaller ID
         url="https://dallasfreepress.com/example-article-1/",
@@ -240,7 +241,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
     )
 
     article1 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -248,7 +249,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
         page=page1,
     )
     article2 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="2345",
         title="Example Article 2",
         content="<p>Content</p>",
@@ -280,12 +281,12 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
         assert num_recommendations == 0
 
 
-def test_add_recommendation_invalid_score(refresh_tables, engine):
+def test_add_recommendation_invalid_score(site_name, refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
     )
     article = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -309,12 +310,12 @@ def test_add_recommendation_invalid_score(refresh_tables, engine):
         assert num_recommendations == 0
 
 
-def test_add_recommendations_duplicate(refresh_tables, engine):
+def test_add_recommendations_duplicate(site_name, refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
     )
     article = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -345,7 +346,7 @@ def test_add_recommendations_duplicate(refresh_tables, engine):
         assert num_recommendations == 0
 
 
-def test_delete_recommendation(refresh_tables, engine):
+def test_delete_recommendation(site_name, refresh_tables, engine):
     page_id1 = UUID(int=1)
     page_id2 = UUID(int=2)
     page1 = Page(
@@ -357,7 +358,7 @@ def test_delete_recommendation(refresh_tables, engine):
         url="https://dallasfreepress.com/example-article-2/",
     )
     article1 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article 1",
         content="<p>Content</p>",
@@ -365,7 +366,7 @@ def test_delete_recommendation(refresh_tables, engine):
         page=page1,
     )
     article2 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="2345",
         title="Example Article 2",
         content="<p>Content</p>",

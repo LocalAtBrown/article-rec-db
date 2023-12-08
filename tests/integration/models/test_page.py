@@ -8,7 +8,6 @@ from sqlmodel import Session, func, select
 from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
 from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
 from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
-from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
 def test_add_page_not_article(refresh_tables, engine):
@@ -21,9 +20,8 @@ def test_add_page_not_article(refresh_tables, engine):
 
         assert isinstance(page.id, UUID)
         assert isinstance(page.db_created_at, datetime)
-        assert page.db_updated_at is None
         assert page.url == "https://afrolanews.org/"
-        assert len(page.article) == 0
+        assert page.article is None
 
 
 def test_add_pages_duplicate_url(refresh_tables, engine):
@@ -51,26 +49,7 @@ def test_add_pages_duplicate_url(refresh_tables, engine):
         assert num_pages == 1
 
 
-def test_update_page(refresh_tables, engine):
-    page = Page(
-        url="https://dallasfreepress.com/example-article/",
-    )
-    with Session(engine) as session:
-        session.add(page)
-        session.commit()
-
-        # Upon creation, db_updated_at should be None
-        assert page.db_updated_at is None
-
-        page.url = "https://dallasfreepress.com/example-article-2/"
-        session.add(page)
-        session.commit()
-
-        # After updating, db_updated_at should be a datetime
-        assert isinstance(page.db_updated_at, datetime)
-
-
-def test_delete_page(refresh_tables, engine):
+def test_delete_page(site_name, refresh_tables, engine):
     page_id1 = UUID(int=1)
     page_id2 = UUID(int=2)
     page1 = Page(
@@ -82,7 +61,7 @@ def test_delete_page(refresh_tables, engine):
         url="https://dallasfreepress.com/example-article-2/",
     )
     article1 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article 1",
         content="<p>Content</p>",
@@ -90,7 +69,7 @@ def test_delete_page(refresh_tables, engine):
         page=page1,
     )
     article2 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="2345",
         title="Example Article 2",
         content="<p>Content</p>",
