@@ -37,8 +37,7 @@ def test_add_article_with_page(site_name, refresh_tables, engine):
         assert isinstance(page.db_created_at, datetime)
         assert page.db_updated_at is None
         assert page.url == "https://dallasfreepress.com/example-article/"
-        assert len(page.article) == 1
-        assert page.article[0] is article
+        assert page.article is article
 
         assert isinstance(article.db_created_at, datetime)
         assert article.db_updated_at is None
@@ -178,7 +177,7 @@ def test_upsert_article(site_name, refresh_tables, engine):
         session.add(page)
         session.commit()
 
-        assert page.article[0] is article
+        assert page.article is article
         assert article.db_updated_at is None
 
     # Now, do an upsert
@@ -229,7 +228,7 @@ def test_upsert_article(site_name, refresh_tables, engine):
         page = session.exec(select(Page).where(Page.id == page.id)).one()
         article_updated = session.exec(select(Article).where(Article.page_id == page.id)).unique().one()
 
-        assert page.article[0].page_id == article_updated.page_id
+        assert page.article is article_updated
 
         assert article_updated.db_created_at == article.db_created_at
         assert isinstance(article_updated.db_updated_at, datetime)
@@ -303,7 +302,7 @@ def test_delete_article(site_name, refresh_tables, engine):
         # Check pages
         assert session.exec(select(func.count(Page.id))).one() == 2
         page1 = session.exec(select(Page).where(Page.id == page_id1)).one()
-        assert page1.article == []
+        assert page1.article is None
 
         # Check articles
         assert session.exec(select(Article).where(Article.page_id == page_id1)).one_or_none() is None

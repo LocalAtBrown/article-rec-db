@@ -22,7 +22,7 @@ def test_add_page_not_article(refresh_tables, engine):
         assert isinstance(page.db_created_at, datetime)
         assert page.db_updated_at is None
         assert page.url == "https://afrolanews.org/"
-        assert len(page.article) == 0
+        assert page.article is None
 
 
 def test_add_pages_duplicate_url(refresh_tables, engine):
