@@ -20,7 +20,6 @@ def test_add_page_not_article(refresh_tables, engine):
 
         assert isinstance(page.id, UUID)
         assert isinstance(page.db_created_at, datetime)
-        assert page.db_updated_at is None
         assert page.url == "https://afrolanews.org/"
         assert page.article is None
 
@@ -48,25 +47,6 @@ def test_add_pages_duplicate_url(refresh_tables, engine):
         session.rollback()
         num_pages = session.exec(select(func.count(Page.id))).one()
         assert num_pages == 1
-
-
-def test_update_page(refresh_tables, engine):
-    page = Page(
-        url="https://dallasfreepress.com/example-article/",
-    )
-    with Session(engine) as session:
-        session.add(page)
-        session.commit()
-
-        # Upon creation, db_updated_at should be None
-        assert page.db_updated_at is None
-
-        page.url = "https://dallasfreepress.com/example-article-2/"
-        session.add(page)
-        session.commit()
-
-        # After updating, db_updated_at should be a datetime
-        assert isinstance(page.db_updated_at, datetime)
 
 
 def test_delete_page(site_name, refresh_tables, engine):

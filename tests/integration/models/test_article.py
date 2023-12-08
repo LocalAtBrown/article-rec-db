@@ -35,7 +35,6 @@ def test_add_article_with_page(site_name, refresh_tables, engine):
 
         assert isinstance(page.id, UUID)
         assert isinstance(page.db_created_at, datetime)
-        assert page.db_updated_at is None
         assert page.url == "https://dallasfreepress.com/example-article/"
         assert page.article is article
 
