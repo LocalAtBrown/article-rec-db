@@ -8,7 +8,6 @@ from sqlmodel import Session, func, select
 from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
 from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
 from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
-from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
 @pytest.fixture(scope="module")
@@ -16,12 +15,12 @@ def rng() -> np.random.Generator:
     return np.random.default_rng(42)
 
 
-def test_add_embedding(refresh_tables, engine, rng):
+def test_add_embedding(site_name, refresh_tables, engine, rng):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
     )
     article = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -57,7 +56,7 @@ def test_add_embedding(refresh_tables, engine, rng):
         assert embedding.execution is execution
 
 
-def test_select_embeddings_knn(refresh_tables, engine, rng):
+def test_select_embeddings_knn(site_name, refresh_tables, engine, rng):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
     )
@@ -68,7 +67,7 @@ def test_select_embeddings_knn(refresh_tables, engine, rng):
         url="https://dallasfreepress.com/example-article-3/",
     )
     article1 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -76,7 +75,7 @@ def test_select_embeddings_knn(refresh_tables, engine, rng):
         page=page1,
     )
     article2 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="2345",
         title="Example Article 2",
         content="<p>Content</p>",
@@ -84,7 +83,7 @@ def test_select_embeddings_knn(refresh_tables, engine, rng):
         page=page2,
     )
     article3 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="3456",
         title="Example Article 3",
         content="<p>Content</p>",
@@ -141,7 +140,7 @@ def test_select_embeddings_knn(refresh_tables, engine, rng):
         assert np.isclose(results[1][1], similarity_13).all()
 
 
-def test_delete_embedding(refresh_tables, engine):
+def test_delete_embedding(site_name, refresh_tables, engine):
     page_id1 = UUID(int=1)
     page_id2 = UUID(int=2)
     page1 = Page(
@@ -153,7 +152,7 @@ def test_delete_embedding(refresh_tables, engine):
         url="https://dallasfreepress.com/example-article-2/",
     )
     article1 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article 1",
         content="<p>Content</p>",
@@ -161,7 +160,7 @@ def test_delete_embedding(refresh_tables, engine):
         page=page1,
     )
     article2 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="2345",
         title="Example Article 2",
         content="<p>Content</p>",

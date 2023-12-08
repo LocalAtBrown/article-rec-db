@@ -10,17 +10,16 @@ from article_rec_db.models import Article, Embedding, Execution, Page, Recommend
 from article_rec_db.models.article import Language
 from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
 from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
-from article_rec_db.sites import DALLAS_FREE_PRESS
 
 
-def test_add_article_with_page(refresh_tables, engine):
+def test_add_article_with_page(site_name, refresh_tables, engine):
     # This is how we would add a page that is also an article
     page = Page(
         url="https://dallasfreepress.com/example-article/",
     )
     article_published_at = datetime.utcnow()
     article = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         description="Description",
@@ -44,7 +43,7 @@ def test_add_article_with_page(refresh_tables, engine):
         assert isinstance(article.db_created_at, datetime)
         assert article.db_updated_at is None
         assert article.page_id == page.id
-        assert article.site == DALLAS_FREE_PRESS.name
+        assert article.site == site_name
         assert article.id_in_site == "1234"
         assert article.title == "Example Article"
         assert article.description == "Description"
@@ -59,10 +58,10 @@ def test_add_article_with_page(refresh_tables, engine):
         assert len(article.recommendations_where_this_is_target) == 0
 
 
-def test_add_article_without_page(refresh_tables, engine):
+def test_add_article_without_page(site_name, refresh_tables, engine):
     article = Article(
         page_id=uuid4(),
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="2345",
         title="Example Article",
         content="<p>Content</p>",
@@ -85,7 +84,7 @@ def test_add_article_without_page(refresh_tables, engine):
         assert num_articles == 0
 
 
-def test_add_articles_duplicate_site_and_id_in_site(refresh_tables, engine):
+def test_add_articles_duplicate_site_and_id_in_site(site_name, refresh_tables, engine):
     page1 = Page(
         url="https://dallasfreepress.com/example-article/",
     )
@@ -94,7 +93,7 @@ def test_add_articles_duplicate_site_and_id_in_site(refresh_tables, engine):
     )
     id_in_site = "1234"
     article1 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site=id_in_site,
         title="Example Article",
         content="<p>Content</p>",
@@ -102,7 +101,7 @@ def test_add_articles_duplicate_site_and_id_in_site(refresh_tables, engine):
         page=page1,
     )
     article2 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site=id_in_site,
         title="Example Article 2",
         content="<p>Content</p>",
@@ -128,12 +127,12 @@ def test_add_articles_duplicate_site_and_id_in_site(refresh_tables, engine):
         assert num_articles == 1
 
 
-def test_update_article(refresh_tables, engine):
+def test_update_article(site_name, refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
     )
     article = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         content="<p>Content</p>",
@@ -159,13 +158,13 @@ def test_update_article(refresh_tables, engine):
         assert article.site_updated_at == site_updated_at
 
 
-def test_upsert_article(refresh_tables, engine):
+def test_upsert_article(site_name, refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
     )
     article_published_at = datetime.utcnow()
     article = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article",
         description="Description",
@@ -235,7 +234,7 @@ def test_upsert_article(refresh_tables, engine):
         assert article_updated.db_created_at == article.db_created_at
         assert isinstance(article_updated.db_updated_at, datetime)
         assert article_updated.page_id == article_updated.page.id == page.id == article.page_id
-        assert article_updated.site == DALLAS_FREE_PRESS.name
+        assert article_updated.site == site_name
         assert article_updated.id_in_site == "1234"
         assert article_updated.title == "Example Article Updated"
         assert article_updated.description == "Description Updated"
@@ -246,7 +245,7 @@ def test_upsert_article(refresh_tables, engine):
         assert article_updated.is_in_house_content is True
 
 
-def test_delete_article(refresh_tables, engine):
+def test_delete_article(site_name, refresh_tables, engine):
     page_id1 = UUID(int=1)
     page_id2 = UUID(int=2)
     page1 = Page(
@@ -258,7 +257,7 @@ def test_delete_article(refresh_tables, engine):
         url="https://dallasfreepress.com/example-article-2/",
     )
     article1 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="1234",
         title="Example Article 1",
         content="<p>Content</p>",
@@ -266,7 +265,7 @@ def test_delete_article(refresh_tables, engine):
         page=page1,
     )
     article2 = Article(
-        site=DALLAS_FREE_PRESS.name,
+        site=site_name,
         id_in_site="2345",
         title="Example Article 2",
         content="<p>Content</p>",
