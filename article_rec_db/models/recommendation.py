@@ -1,4 +1,4 @@
-from typing import Annotated, Any, Optional
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import event
@@ -23,22 +23,21 @@ class Recommendation(AutoUUIDPrimaryKey, CreationTracked, table=True):
         UniqueConstraint("execution_id", "target_article_id", name="recommendation_execution_target_unique"),
     )
 
-    execution_id: Annotated[UUID, Field(foreign_key="execution.id")]
-    source_article_id: Annotated[Optional[UUID], Field(foreign_key="article.page_id")]
-    target_article_id: Annotated[UUID, Field(foreign_key="article.page_id")]
+    execution_id: UUID = Field(foreign_key="execution.id")
+    source_article_id: UUID | None = Field(foreign_key="article.page_id")
+    target_article_id: UUID = Field(foreign_key="article.page_id")
 
     # Recommendation score, between 0 and 1. Top recs should have higher scores
-    score: Annotated[
-        float,
-        Field(sa_column_args=[CheckConstraint("score >= 0 AND score <= 1", name="recommendation_score_between_0_and_1")]),
-    ]
+    score: float = Field(
+        sa_column_args=[CheckConstraint("score >= 0 AND score <= 1", name="recommendation_score_between_0_and_1")]
+    )
 
     # A recommendation always corresponds to a task execution
     execution: Execution = Relationship(back_populates="recommendations")
 
     # A default recommendation always corresponds to a target article, but not necessarily to a source article
     # The sa_relationship_kwargs is here to avert the AmbiguousForeignKeyError, see: https://github.com/tiangolo/sqlmodel/issues/10#issuecomment-1537445078
-    source_article: Optional[Article] = Relationship(
+    source_article: Article | None = Relationship(
         back_populates="recommendations_where_this_is_source",
         sa_relationship_kwargs={"foreign_keys": "[Recommendation.source_article_id]"},
     )

@@ -1,4 +1,3 @@
-from typing import Annotated
 from uuid import UUID, uuid4
 
 from pydantic import HttpUrl
@@ -8,8 +7,8 @@ from .helpers import AutoUUIDPrimaryKey, UpdateTracked
 
 
 class Page(AutoUUIDPrimaryKey, UpdateTracked, table=True):
-    id: Annotated[UUID, Field(default_factory=uuid4, primary_key=True)]
-    url: Annotated[HttpUrl, Field(sa_type=String, unique=True)]
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    url: HttpUrl = Field(sa_type=String, unique=True)
 
     # An article is always a page, but a page is not always an article
     # Techinically SQLModel considers Page the "many" in the many-to-one relationship, so this list will only ever have at most one element
