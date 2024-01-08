@@ -4,6 +4,7 @@ from uuid import UUID
 
 from sqlmodel import Field, Relationship, String, Text, UniqueConstraint
 
+from .execution import Execution
 from .helpers import UpdateTracked
 from .page import Page
 
@@ -23,6 +24,9 @@ class Article(UpdateTracked, table=True):
 
     # Page ID refers to the page table
     page_id: UUID = Field(primary_key=True, foreign_key="page.id")
+
+    # ID of task execution that last updated this article
+    execution_id_last_updated: UUID = Field(foreign_key="execution.id")
 
     # Site name
     site: str = Field(sa_type=String)
@@ -46,6 +50,9 @@ class Article(UpdateTracked, table=True):
 
     # Whether the article is in-house content or not (e.g., republished from another source)
     is_in_house_content: bool = True
+
+    # An article always corresponds to the execution that last updated it
+    execution_last_updated: Execution = Relationship(back_populates="articles")
 
     # An article is always a page, but a page is not always an article
     page: Page = Relationship(back_populates="article")

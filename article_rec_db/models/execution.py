@@ -5,13 +5,7 @@ from sqlmodel import Relationship
 from .helpers import AutoUUIDPrimaryKey, CreationTracked
 
 
-class StrategyType(StrEnum):
-    POPULARITY = "popularity"
-    COLLABORATIVE_FILTERING_ITEM_BASED = "collaborative_filtering_item_based"
-    SEMANTIC_SIMILARITY = "semantic_similarity"
-
-
-class StrategyRecommendationType(StrEnum):
+class RecommendationType(StrEnum):
     DEFAULT_AKA_NO_SOURCE = "default_aka_no_source"
     SOURCE_TARGET_INTERCHANGEABLE = "source_target_interchangeable"  # This is where either S -> T or T -> S is saved to save space, since one recommendation goes both ways
     SOURCE_TARGET_NOT_INTERCHANGEABLE = "source_target_not_interchangeable"
@@ -19,13 +13,37 @@ class StrategyRecommendationType(StrEnum):
 
 class Execution(AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
-    Log of training job task executions, each with respect to a single strategy.
+    Log of training job task executions.
     """
 
-    strategy: StrategyType
-    strategy_recommendation_type: StrategyRecommendationType
+    # Name of task, to be defined by training job
+    task_name: str
 
-    # An execution has multiple embeddings
+    # Task success/failure status
+    success: bool
+
+    # Recommendation type, if the task creates recommendations
+    recommendation_type: RecommendationType | None
+
+    # An execution can have multiple pages, if it creates multiple pages
+    pages: list["Page"] = Relationship(  # type: ignore
+        back_populates="execution",
+        sa_relationship_kwargs={
+            # If an execution is deleted, delete all pages associated with it. If a page is disassociated from this execution, delete it
+            "cascade": "all, delete-orphan"
+        },
+    )
+
+    # An execution can have multiple articles, if it creates or updates multiple articles
+    articles: list["Article"] = Relationship(  # type: ignore
+        back_populates="execution_last_updated",
+        sa_relationship_kwargs={
+            # If an execution is deleted, delete all articles associated with it. If an article is disassociated from this execution, delete it
+            "cascade": "all, delete-orphan"
+        },
+    )
+
+    # An execution can have multiple embeddings, if it creates multiple embeddings
     embeddings: list["Embedding"] = Relationship(  # type: ignore
         back_populates="execution",
         sa_relationship_kwargs={
@@ -33,8 +51,7 @@ class Execution(AutoUUIDPrimaryKey, CreationTracked, table=True):
             "cascade": "all, delete-orphan"
         },
     )
-    # An execution can produce zero (if it doesn't have a default strategy, such as popularity)
-    # or multiple default recommendations (if it has a default strategy)
+    # An execution can have multiple recommendations, if it creates multiple recommendations
     recommendations: list["Recommendation"] = Relationship(  # type: ignore
         back_populates="execution",
         sa_relationship_kwargs={
