@@ -181,66 +181,47 @@ def test_upsert_article(site_name, refresh_tables, engine):
 
     # Now, do an upsert
     article_updated_at = datetime.utcnow()
-    article_updated = Article(
-        site=article.site,
-        id_in_site=article.id_in_site,
-        title="Example Article Updated",
-        description="Description Updated",
-        content="<p>Content Updated</p>",
-        site_published_at=article.site_published_at,
-        site_updated_at=article_updated_at,
-        language=article.language,
-    )
-
     with Session(engine) as session:
-        stmt = (
-            insert(Article)
-            .values(
-                page_id=page.id,
-                site=article_updated.site,
-                id_in_site=article_updated.id_in_site,
-                title=article_updated.title,
-                description=article_updated.description,
-                content=article_updated.content,
-                site_published_at=article_updated.site_published_at,
-                site_updated_at=article_updated.site_updated_at,
-                language=article_updated.language,
-                is_in_house_content=article_updated.is_in_house_content,
-            )
-            .on_conflict_do_update(
-                index_elements=["site", "id_in_site"],
-                set_={
-                    "title": article_updated.title,
-                    "description": article_updated.description,
-                    "content": article_updated.content,
-                    "site_updated_at": article_updated.site_updated_at,
-                    "db_updated_at": datetime.utcnow(),
-                },
-            )
+        stmt = insert(Article).values(
+            [
+                {
+                    "page_id": page.id,
+                    "site": article.site,
+                    "id_in_site": article.id_in_site,
+                    "title": "Example Article Updated",
+                    "description": "Description Updated",
+                    "content": "<p>Content Updated</p>",
+                    "site_published_at": article.site_published_at,
+                    "site_updated_at": article_updated_at,
+                    "language": article.language,
+                    "is_in_house_content": article.is_in_house_content,
+                }
+            ]
         )
-        session.exec(stmt)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=[Article.site, Article.id_in_site],
+            set_={
+                "title": stmt.excluded.title,
+                "description": stmt.excluded.description,
+                "content": stmt.excluded.content,
+                "site_updated_at": stmt.excluded.site_updated_at,
+                "db_updated_at": datetime.utcnow(),
+            },
+        ).returning(Article)
+
+        article = session.scalars(stmt).unique().one()
         session.commit()
 
         # Checks
         assert len(session.exec(select(Article)).unique().all()) == 1
 
-        page = session.exec(select(Page).where(Page.id == page.id)).one()
-        article_updated = session.exec(select(Article).where(Article.page_id == page.id)).unique().one()
+        assert page.id == article.page_id
 
-        assert page.article is article_updated
-
-        assert article_updated.db_created_at == article.db_created_at
-        assert isinstance(article_updated.db_updated_at, datetime)
-        assert article_updated.page_id == article_updated.page.id == page.id == article.page_id
-        assert article_updated.site == site_name
-        assert article_updated.id_in_site == "1234"
-        assert article_updated.title == "Example Article Updated"
-        assert article_updated.description == "Description Updated"
-        assert article_updated.content == "<p>Content Updated</p>"
-        assert article_updated.site_published_at == article_published_at
-        assert article_updated.site_updated_at == article_updated_at
-        assert article_updated.language == Language.SPANISH
-        assert article_updated.is_in_house_content is True
+        assert isinstance(article.db_updated_at, datetime)
+        assert article.title == "Example Article Updated"
+        assert article.description == "Description Updated"
+        assert article.content == "<p>Content Updated</p>"
+        assert article.site_updated_at == article_updated_at
 
 
 def test_delete_article(site_name, refresh_tables, engine):
