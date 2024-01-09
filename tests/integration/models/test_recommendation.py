@@ -7,12 +7,12 @@ from sqlmodel import Session, func, select
 
 from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
 from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
-from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
+from article_rec_db.models.execution import RecommendationType
 
 
 def test_add_default_recommendation(site_name, refresh_tables, engine):
     page = Page(
-        url="https://dallasfreepress.com/example-article/",
+        url="https://example.com/example-article/",
     )
     article = Article(
         site=site_name,
@@ -23,7 +23,7 @@ def test_add_default_recommendation(site_name, refresh_tables, engine):
         page=page,
     )
     execution = Execution(
-        strategy=StrategyType.POPULARITY, strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE
+        task_name="create_recommendations", success=True, recommendation_type=RecommendationType.DEFAULT_AKA_NO_SOURCE
     )
     recommendation = Recommendation(execution=execution, target_article=article, score=0.8)
 
@@ -51,7 +51,7 @@ def test_add_default_recommendation(site_name, refresh_tables, engine):
 
 def test_add_default_recommendation_with_nonnull_source_id(site_name, refresh_tables, engine):
     page = Page(
-        url="https://dallasfreepress.com/example-article/",
+        url="https://example.com/example-article/",
     )
     article = Article(
         site=site_name,
@@ -62,7 +62,7 @@ def test_add_default_recommendation_with_nonnull_source_id(site_name, refresh_ta
         page=page,
     )
     execution = Execution(
-        strategy=StrategyType.POPULARITY, strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE
+        task_name="create_recommendations", success=True, recommendation_type=RecommendationType.DEFAULT_AKA_NO_SOURCE
     )
     recommendation = Recommendation(execution=execution, source_article=article, target_article=article, score=1)
 
@@ -84,11 +84,11 @@ def test_add_default_recommendation_with_nonnull_source_id(site_name, refresh_ta
 def test_add_recommendation_source_target_interchangeable(site_name, refresh_tables, engine):
     page1 = Page(
         id=UUID(int=1),  # smaller ID
-        url="https://dallasfreepress.com/example-article-1/",
+        url="https://example.com/example-article-1/",
     )
     page2 = Page(
         id=UUID(int=2),  # larger ID
-        url="https://dallasfreepress.com/example-article-2/",
+        url="https://example.com/example-article-2/",
     )
 
     article1 = Article(
@@ -109,8 +109,9 @@ def test_add_recommendation_source_target_interchangeable(site_name, refresh_tab
     )
 
     execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+        task_name="create_recommendations",
+        success=True,
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
 
     # Article 1 has a lower ID than article 2, so this is correct
@@ -147,7 +148,7 @@ def test_add_recommendation_source_target_interchangeable(site_name, refresh_tab
 
 def test_add_recommendation_source_target_interchangeable_no_source(site_name, refresh_tables, engine):
     page = Page(
-        url="https://dallasfreepress.com/example-article/",
+        url="https://example.com/example-article/",
     )
     article = Article(
         site=site_name,
@@ -159,8 +160,9 @@ def test_add_recommendation_source_target_interchangeable_no_source(site_name, r
     )
 
     execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+        task_name="create_recommendations",
+        success=True,
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
     recommendation = Recommendation(execution=execution, target_article=article, score=0.9)
 
@@ -184,11 +186,11 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
 ):
     page1 = Page(
         id=UUID(int=1),  # smaller ID
-        url="https://dallasfreepress.com/example-article-1/",
+        url="https://example.com/example-article-1/",
     )
     page2 = Page(
         id=UUID(int=2),  # larger ID
-        url="https://dallasfreepress.com/example-article-2/",
+        url="https://example.com/example-article-2/",
     )
 
     article1 = Article(
@@ -209,8 +211,9 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
     )
 
     execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+        task_name="create_recommendations",
+        success=True,
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
     # Article 2 has a larger ID than article 1, so this is incorrect
     recommendation = Recommendation(execution=execution, source_article=article2, target_article=article1, score=0.9)
@@ -233,11 +236,11 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
 def test_add_recommendation_source_target_interchangeable_wrong_order_article_side(site_name, refresh_tables, engine):
     page1 = Page(
         id=UUID(int=1),  # smaller ID
-        url="https://dallasfreepress.com/example-article-1/",
+        url="https://example.com/example-article-1/",
     )
     page2 = Page(
         id=UUID(int=2),  # larger ID
-        url="https://dallasfreepress.com/example-article-2/",
+        url="https://example.com/example-article-2/",
     )
 
     article1 = Article(
@@ -258,8 +261,9 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
     )
 
     execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+        task_name="create_recommendations",
+        success=True,
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
     recommendation = Recommendation(execution=execution, score=0.9)
     # Article 2 has a larger ID than article 1, so this is incorrect
@@ -283,7 +287,7 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
 
 def test_add_recommendation_invalid_score(site_name, refresh_tables, engine):
     page = Page(
-        url="https://dallasfreepress.com/example-article/",
+        url="https://example.com/example-article/",
     )
     article = Article(
         site=site_name,
@@ -294,7 +298,7 @@ def test_add_recommendation_invalid_score(site_name, refresh_tables, engine):
         page=page,
     )
     execution = Execution(
-        strategy=StrategyType.POPULARITY, strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE
+        task_name="create_recommendations", success=True, recommendation_type=RecommendationType.DEFAULT_AKA_NO_SOURCE
     )
     recommendation = Recommendation(execution=execution, target_article=article, score=1.1)
 
@@ -312,7 +316,7 @@ def test_add_recommendation_invalid_score(site_name, refresh_tables, engine):
 
 def test_add_recommendations_duplicate(site_name, refresh_tables, engine):
     page = Page(
-        url="https://dallasfreepress.com/example-article/",
+        url="https://example.com/example-article/",
     )
     article = Article(
         site=site_name,
@@ -323,8 +327,9 @@ def test_add_recommendations_duplicate(site_name, refresh_tables, engine):
         page=page,
     )
     execution = Execution(
-        strategy=StrategyType.POPULARITY,
-        strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE,
+        task_name="create_recommendations",
+        success=True,
+        recommendation_type=RecommendationType.DEFAULT_AKA_NO_SOURCE,
     )
     recommendation1 = Recommendation(execution=execution, target_article=article, score=0.8)
     recommendation2 = Recommendation(execution=execution, target_article=article, score=0.8)
@@ -351,11 +356,11 @@ def test_delete_recommendation(site_name, refresh_tables, engine):
     page_id2 = UUID(int=2)
     page1 = Page(
         id=page_id1,
-        url="https://dallasfreepress.com/example-article-1/",
+        url="https://example.com/example-article-1/",
     )
     page2 = Page(
         id=page_id2,
-        url="https://dallasfreepress.com/example-article-2/",
+        url="https://example.com/example-article-2/",
     )
     article1 = Article(
         site=site_name,
@@ -375,8 +380,9 @@ def test_delete_recommendation(site_name, refresh_tables, engine):
     )
 
     execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+        task_name="create_recommendations",
+        success=True,
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
     embedding1 = Embedding(article=article1, execution=execution, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
     embedding2 = Embedding(article=article2, execution=execution, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)

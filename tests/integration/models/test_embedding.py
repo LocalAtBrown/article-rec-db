@@ -7,7 +7,7 @@ from sqlmodel import Session, func, select
 
 from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
 from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
-from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
+from article_rec_db.models.execution import RecommendationType
 
 
 @pytest.fixture(scope="module")
@@ -16,8 +16,11 @@ def rng() -> np.random.Generator:
 
 
 def test_add_embedding(site_name, refresh_tables, engine, rng):
+    # Create the article
+    execution_create_pages = Execution(task_name="create_pages", success=False)
     page = Page(
-        url="https://dallasfreepress.com/example-article/",
+        url="https://example.com/example-article/",
+        execution=execution_create_pages,
     )
     article = Article(
         site=site_name,
@@ -26,15 +29,26 @@ def test_add_embedding(site_name, refresh_tables, engine, rng):
         content="<p>Content</p>",
         site_published_at=datetime.utcnow(),
         page=page,
+        execution_last_updated=execution_create_pages,
     )
-    execution = Execution(
-        strategy=StrategyType.COLLABORATIVE_FILTERING_ITEM_BASED,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    with Session(engine) as session:
+        session.add(article)
+        session.commit()
+
+        execution_create_pages.success = True
+        session.commit()
+
+        assert len(article.embeddings) == 0
+
+    # Create the embedding
+    execution_create_embeddings = Execution(
+        task_name="create_embeddings",
+        success=True,
     )
     embedding_vector = rng.uniform(size=MAX_EMBEDDING_DIMENSIONS).tolist()
     embedding = Embedding(
         article=article,
-        execution=execution,
+        execution=execution_create_embeddings,
         vector=embedding_vector,
     )
 
@@ -42,29 +56,32 @@ def test_add_embedding(site_name, refresh_tables, engine, rng):
         session.add(embedding)
         session.commit()
 
+        execution_create_embeddings.success = True
+        session.commit()
+
         assert len(article.embeddings) == 1
         assert article.embeddings[0] is embedding
 
-        assert len(execution.embeddings) == 1
-        assert execution.embeddings[0] is embedding
+        assert len(execution_create_embeddings.embeddings) == 1
+        assert execution_create_embeddings.embeddings[0] is embedding
 
         assert isinstance(embedding.db_created_at, datetime)
         assert embedding.article_id == article.page_id
-        assert embedding.execution_id == execution.id
+        assert embedding.execution_id == execution_create_embeddings.id
         assert np.isclose(embedding.vector, embedding_vector).all()
         assert embedding.article is article
-        assert embedding.execution is execution
+        assert embedding.execution is execution_create_embeddings
 
 
 def test_select_embeddings_knn(site_name, refresh_tables, engine, rng):
     page1 = Page(
-        url="https://dallasfreepress.com/example-article/",
+        url="https://example.com/example-article/",
     )
     page2 = Page(
-        url="https://dallasfreepress.com/example-article-2/",
+        url="https://example.com/example-article-2/",
     )
     page3 = Page(
-        url="https://dallasfreepress.com/example-article-3/",
+        url="https://example.com/example-article-3/",
     )
     article1 = Article(
         site=site_name,
@@ -91,8 +108,9 @@ def test_select_embeddings_knn(site_name, refresh_tables, engine, rng):
         page=page3,
     )
     execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+        task_name="create_recommendations",
+        success=True,
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
 
     vector1 = rng.uniform(low=0, high=0.5, size=MAX_EMBEDDING_DIMENSIONS)
@@ -145,11 +163,11 @@ def test_delete_embedding(site_name, refresh_tables, engine):
     page_id2 = UUID(int=2)
     page1 = Page(
         id=page_id1,
-        url="https://dallasfreepress.com/example-article-1/",
+        url="https://example.com/example-article-1/",
     )
     page2 = Page(
         id=page_id2,
-        url="https://dallasfreepress.com/example-article-2/",
+        url="https://example.com/example-article-2/",
     )
     article1 = Article(
         site=site_name,
@@ -169,8 +187,9 @@ def test_delete_embedding(site_name, refresh_tables, engine):
     )
 
     execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+        task_name="create_recommendations",
+        success=True,
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
     embedding1 = Embedding(article=article1, execution=execution, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
     embedding2 = Embedding(article=article2, execution=execution, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)
