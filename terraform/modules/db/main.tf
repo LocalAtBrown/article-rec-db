@@ -5,9 +5,9 @@ locals {
   tables = {
     "page"           = "page"
     "article"        = "article"
-    "execution"      = "execution"
     "embedding"      = "embedding"
     "recommendation" = "recommendation"
+    "recommender"    = "recommender"
   }
 }
 
