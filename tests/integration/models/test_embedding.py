@@ -5,9 +5,9 @@ import numpy as np
 import pytest
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
+from article_rec_db.models import Article, Embedding, Page, Recommendation, Recommender
 from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
-from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
+from article_rec_db.models.recommender import RecommendationType
 
 
 @pytest.fixture(scope="module")
@@ -27,14 +27,14 @@ def test_add_embedding(site_name, refresh_tables, engine, rng):
         site_published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(
-        strategy=StrategyType.COLLABORATIVE_FILTERING_ITEM_BASED,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    recommender = Recommender(
+        strategy="example-strategy",
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
     embedding_vector = rng.uniform(size=MAX_EMBEDDING_DIMENSIONS).tolist()
     embedding = Embedding(
         article=article,
-        execution=execution,
+        recommender=recommender,
         vector=embedding_vector,
     )
 
@@ -45,15 +45,15 @@ def test_add_embedding(site_name, refresh_tables, engine, rng):
         assert len(article.embeddings) == 1
         assert article.embeddings[0] is embedding
 
-        assert len(execution.embeddings) == 1
-        assert execution.embeddings[0] is embedding
+        assert len(recommender.embeddings) == 1
+        assert recommender.embeddings[0] is embedding
 
         assert isinstance(embedding.db_created_at, datetime)
         assert embedding.article_id == article.page_id
-        assert embedding.execution_id == execution.id
+        assert embedding.recommender_id == recommender.id
         assert np.isclose(embedding.vector, embedding_vector).all()
         assert embedding.article is article
-        assert embedding.execution is execution
+        assert embedding.recommender is recommender
 
 
 def test_select_embeddings_knn(site_name, refresh_tables, engine, rng):
@@ -90,9 +90,9 @@ def test_select_embeddings_knn(site_name, refresh_tables, engine, rng):
         site_published_at=datetime.utcnow(),
         page=page3,
     )
-    execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    recommender = Recommender(
+        strategy="example-strategy",
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
 
     vector1 = rng.uniform(low=0, high=0.5, size=MAX_EMBEDDING_DIMENSIONS)
@@ -101,17 +101,17 @@ def test_select_embeddings_knn(site_name, refresh_tables, engine, rng):
 
     embedding1 = Embedding(
         article=article1,
-        execution=execution,
+        recommender=recommender,
         vector=vector1.tolist(),
     )
     embedding2 = Embedding(
         article=article2,
-        execution=execution,
+        recommender=recommender,
         vector=vector2.tolist(),
     )
     embedding3 = Embedding(
         article=article3,
-        execution=execution,
+        recommender=recommender,
         vector=vector3.tolist(),
     )
     similarity_13 = (
@@ -126,7 +126,7 @@ def test_select_embeddings_knn(site_name, refresh_tables, engine, rng):
         similarity = (1 - Embedding.vector.cosine_distance(embedding1.vector)).label("similarity")
         statement = (
             select(Embedding.id, similarity)
-            .where((Embedding.execution_id == execution.id) & (Embedding.id != embedding1.id))
+            .where((Embedding.recommender_id == recommender.id) & (Embedding.id != embedding1.id))
             .order_by(similarity.desc())
         )
         results = session.exec(statement).all()
@@ -168,13 +168,13 @@ def test_delete_embedding(site_name, refresh_tables, engine):
         page=page2,
     )
 
-    execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    recommender = Recommender(
+        strategy="example-strategy",
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
-    embedding1 = Embedding(article=article1, execution=execution, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
-    embedding2 = Embedding(article=article2, execution=execution, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)
-    recommendation = Recommendation(execution=execution, source_article=article1, target_article=article2, score=0.9)
+    embedding1 = Embedding(article=article1, recommender=recommender, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
+    embedding2 = Embedding(article=article2, recommender=recommender, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)
+    recommendation = Recommendation(recommender=recommender, source_article=article1, target_article=article2, score=0.9)
 
     with Session(engine) as session:
         session.add(embedding1)
@@ -185,7 +185,7 @@ def test_delete_embedding(site_name, refresh_tables, engine):
         # Check that everything is written
         assert session.exec(select(func.count(Page.id))).one() == 2
         assert session.exec(select(func.count(Article.page_id))).one() == 2
-        assert session.exec(select(func.count(Execution.id))).one() == 1
+        assert session.exec(select(func.count(Recommender.id))).one() == 1
         assert session.exec(select(func.count(Embedding.id))).one() == 2
         assert session.exec(select(func.count(Recommendation.id))).one() == 1
 
@@ -203,8 +203,8 @@ def test_delete_embedding(site_name, refresh_tables, engine):
         article1 = session.exec(select(Article).where(Article.page_id == page_id1)).unique().one()
         assert article1.embeddings == []
 
-        # Check executions
-        assert session.exec(select(func.count(Execution.id))).one() == 1
+        # Check recommenders
+        assert session.exec(select(func.count(Recommender.id))).one() == 1
 
         # Check embeddings
         assert session.exec(select(func.count(Embedding.id))).one() == 1

@@ -6,10 +6,10 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
+from article_rec_db.models import Article, Embedding, Page, Recommendation, Recommender
 from article_rec_db.models.article import Language
 from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
-from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
+from article_rec_db.models.recommender import RecommendationType
 
 
 def test_add_article_with_page(site_name, refresh_tables, engine):
@@ -271,13 +271,13 @@ def test_delete_article(site_name, refresh_tables, engine):
         page=page2,
     )
 
-    execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    recommender = Recommender(
+        strategy="example-strategy",
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
-    embedding1 = Embedding(article=article1, execution=execution, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
-    embedding2 = Embedding(article=article2, execution=execution, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)
-    recommendation = Recommendation(execution=execution, source_article=article1, target_article=article2, score=0.9)
+    embedding1 = Embedding(article=article1, recommender=recommender, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
+    embedding2 = Embedding(article=article2, recommender=recommender, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)
+    recommendation = Recommendation(recommender=recommender, source_article=article1, target_article=article2, score=0.9)
 
     with Session(engine) as session:
         session.add(embedding1)
@@ -288,7 +288,7 @@ def test_delete_article(site_name, refresh_tables, engine):
         # Check that everything is written
         assert session.exec(select(func.count(Page.id))).one() == 2
         assert session.exec(select(func.count(Article.page_id))).one() == 2
-        assert session.exec(select(func.count(Execution.id))).one() == 1
+        assert session.exec(select(func.count(Recommender.id))).one() == 1
         assert session.exec(select(func.count(Embedding.id))).one() == 2
         assert session.exec(select(func.count(Recommendation.id))).one() == 1
         assert len(article2.recommendations_where_this_is_target) == 1
@@ -308,8 +308,8 @@ def test_delete_article(site_name, refresh_tables, engine):
         article2 = session.exec(select(Article).where(Article.page_id == page_id2)).unique().one()
         assert article2.recommendations_where_this_is_target == []
 
-        # Check executions
-        assert session.exec(select(func.count(Execution.id))).one() == 1
+        # Check recommenders
+        assert session.exec(select(func.count(Recommender.id))).one() == 1
 
         # Check embeddings
         assert session.exec(select(func.count(Embedding.id))).one() == 1
