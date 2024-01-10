@@ -58,7 +58,7 @@ def refresh_tables(engine, initialize_db) -> Generator[None, None, None]:
     with engine.connect() as conn:
         conn.execute(text("TRUNCATE TABLE page CASCADE"))
         conn.execute(text("TRUNCATE TABLE article CASCADE"))
-        conn.execute(text("TRUNCATE TABLE recommender CASCADE"))
         conn.execute(text("TRUNCATE TABLE embedding CASCADE"))
         conn.execute(text("TRUNCATE TABLE recommendation CASCADE"))
+        conn.execute(text("TRUNCATE TABLE recommender CASCADE"))
         conn.commit()
