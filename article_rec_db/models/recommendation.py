@@ -18,12 +18,12 @@ class Recommendation(AutoUUIDPrimaryKey, CreationTracked, table=True):
     supposed to be used as a fallback for any source.
     """
 
-    # Unique constraint on execution_id and target_article_id, since we don't want to record the same recommendation twice
+    # Unique constraint on recommender_id and target_article_id, since we don't want to record the same recommendation twice
     __table_args__ = (
-        UniqueConstraint("execution_id", "target_article_id", name="recommendation_execution_target_unique"),
+        UniqueConstraint("recommender_id", "target_article_id", name="recommendation_recommender_target_unique"),
     )
 
-    execution_id: UUID = Field(foreign_key="execution.id")
+    recommender_id: UUID = Field(foreign_key="recommender.id")
     source_article_id: UUID | None = Field(foreign_key="article.page_id")
     target_article_id: UUID = Field(foreign_key="article.page_id")
 
@@ -32,7 +32,7 @@ class Recommendation(AutoUUIDPrimaryKey, CreationTracked, table=True):
         sa_column_args=[CheckConstraint("score >= 0 AND score <= 1", name="recommendation_score_between_0_and_1")]
     )
 
-    # A recommendation always corresponds to a task execution
+    # A recommendation always corresponds to the recommender that creates it
     recommender: Recommender = Relationship(back_populates="recommendations")
 
     # A default recommendation always corresponds to a target article, but not necessarily to a source article
@@ -66,4 +66,4 @@ def validate_source_id_empty_when_strategy_default(mapper: Any, connection: Any,
     if target.recommender.recommendation_type == RecommendationType.DEFAULT_AKA_NO_SOURCE:
         assert (
             target.source_article_id is None
-        ), f"Source article ID must be empty when execution strategy's recommendation type is default."
+        ), f"Source article ID must be empty when recommender's recommendation type is default."

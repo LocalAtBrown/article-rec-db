@@ -24,17 +24,17 @@ class Recommender(AutoUUIDPrimaryKey, CreationTracked, table=True):
 
     # A recommender can produce multiple embeddings
     embeddings: list["Embedding"] = Relationship(  # type: ignore
-        back_populates="execution",
+        back_populates="recommender",
         sa_relationship_kwargs={
-            # If an execution is deleted, delete all embeddings associated with it. If an embedding is disassociated from this execution, delete it
+            # If a recommender is deleted, delete all embeddings associated with it. If an embedding is disassociated from this recommender, delete it
             "cascade": "all, delete-orphan"
         },
     )
     # A recommender can produce multiple recommendations
     recommendations: list["Recommendation"] = Relationship(  # type: ignore
-        back_populates="execution",
+        back_populates="recommender",
         sa_relationship_kwargs={
-            # If an execution is deleted, delete all recommendations associated with it. If a recommendation is disassociated from this execution, delete it
+            # If a recommender is deleted, delete all recommendations associated with it. If a recommendation is disassociated from this recommender, delete it
             "cascade": "all, delete-orphan"
         },
     )

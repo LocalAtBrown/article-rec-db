@@ -5,9 +5,9 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, func, select
 
-from article_rec_db.models import Article, Embedding, Execution, Page, Recommendation
+from article_rec_db.models import Article, Embedding, Page, Recommendation, Recommender
 from article_rec_db.models.embedding import MAX_EMBEDDING_DIMENSIONS
-from article_rec_db.models.execution import StrategyRecommendationType, StrategyType
+from article_rec_db.models.recommender import RecommendationType
 
 
 def test_add_default_recommendation(site_name, refresh_tables, engine):
@@ -22,10 +22,8 @@ def test_add_default_recommendation(site_name, refresh_tables, engine):
         site_published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(
-        strategy=StrategyType.POPULARITY, strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE
-    )
-    recommendation = Recommendation(execution=execution, target_article=article, score=0.8)
+    recommender = Recommender(strategy="example-strategy", recommendation_type=RecommendationType.DEFAULT_AKA_NO_SOURCE)
+    recommendation = Recommendation(recommender=recommender, target_article=article, score=0.8)
 
     with Session(engine) as session:
         session.add(recommendation)
@@ -35,16 +33,16 @@ def test_add_default_recommendation(site_name, refresh_tables, engine):
         assert len(article.recommendations_where_this_is_target) == 1
         assert article.recommendations_where_this_is_target[0] is recommendation
 
-        assert len(execution.recommendations) == 1
-        assert execution.recommendations[0] is recommendation
+        assert len(recommender.recommendations) == 1
+        assert recommender.recommendations[0] is recommendation
 
         assert isinstance(recommendation.id, UUID)
         assert isinstance(recommendation.db_created_at, datetime)
-        assert recommendation.execution_id == execution.id
+        assert recommendation.recommender_id == recommender.id
         assert recommendation.source_article_id is None
         assert recommendation.target_article_id == article.page_id
         assert recommendation.score == 0.8
-        assert recommendation.execution is execution
+        assert recommendation.recommender is recommender
         assert recommendation.source_article is None
         assert recommendation.target_article is article
 
@@ -61,17 +59,15 @@ def test_add_default_recommendation_with_nonnull_source_id(site_name, refresh_ta
         site_published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(
-        strategy=StrategyType.POPULARITY, strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE
-    )
-    recommendation = Recommendation(execution=execution, source_article=article, target_article=article, score=1)
+    recommender = Recommender(strategy="example-strategy", recommendation_type=RecommendationType.DEFAULT_AKA_NO_SOURCE)
+    recommendation = Recommendation(recommender=recommender, source_article=article, target_article=article, score=1)
 
     with Session(engine) as session:
         session.add(recommendation)
 
         with pytest.raises(
             AssertionError,
-            match=r"Source article ID must be empty when execution strategy's recommendation type is default",
+            match=r"Source article ID must be empty when recommender's recommendation type is default",
         ):
             session.commit()
 
@@ -108,13 +104,13 @@ def test_add_recommendation_source_target_interchangeable(site_name, refresh_tab
         page=page2,
     )
 
-    execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    recommender = Recommender(
+        strategy="example-strategy",
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
 
     # Article 1 has a lower ID than article 2, so this is correct
-    recommendation = Recommendation(execution=execution, source_article=article1, target_article=article2, score=0.9)
+    recommendation = Recommendation(recommender=recommender, source_article=article1, target_article=article2, score=0.9)
 
     with Session(engine) as session:
         session.add(recommendation)
@@ -128,16 +124,16 @@ def test_add_recommendation_source_target_interchangeable(site_name, refresh_tab
         assert len(article2.recommendations_where_this_is_target) == 1
         assert article2.recommendations_where_this_is_target[0] is recommendation
 
-        assert len(execution.recommendations) == 1
-        assert execution.recommendations[0] is recommendation
+        assert len(recommender.recommendations) == 1
+        assert recommender.recommendations[0] is recommendation
 
         assert isinstance(recommendation.id, UUID)
         assert isinstance(recommendation.db_created_at, datetime)
-        assert recommendation.execution_id == execution.id
+        assert recommendation.recommender_id == recommender.id
         assert recommendation.source_article_id == article1.page_id
         assert recommendation.target_article_id == article2.page_id
         assert recommendation.score == 0.9
-        assert recommendation.execution is execution
+        assert recommendation.recommender is recommender
         assert recommendation.source_article is article1
         assert recommendation.target_article is article2
 
@@ -158,11 +154,11 @@ def test_add_recommendation_source_target_interchangeable_no_source(site_name, r
         page=page,
     )
 
-    execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    recommender = Recommender(
+        strategy="example-strategy",
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
-    recommendation = Recommendation(execution=execution, target_article=article, score=0.9)
+    recommendation = Recommendation(recommender=recommender, target_article=article, score=0.9)
 
     with Session(engine) as session:
         session.add(recommendation)
@@ -208,12 +204,12 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_recommenda
         page=page2,
     )
 
-    execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    recommender = Recommender(
+        strategy="example-strategy",
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
     # Article 2 has a larger ID than article 1, so this is incorrect
-    recommendation = Recommendation(execution=execution, source_article=article2, target_article=article1, score=0.9)
+    recommendation = Recommendation(recommender=recommender, source_article=article2, target_article=article1, score=0.9)
 
     with Session(engine) as session:
         session.add(recommendation)
@@ -257,11 +253,11 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
         page=page2,
     )
 
-    execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    recommender = Recommender(
+        strategy="example-strategy",
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
-    recommendation = Recommendation(execution=execution, score=0.9)
+    recommendation = Recommendation(recommender=recommender, score=0.9)
     # Article 2 has a larger ID than article 1, so this is incorrect
     article1.recommendations_where_this_is_target.append(recommendation)
     article2.recommendations_where_this_is_source.append(recommendation)
@@ -293,10 +289,8 @@ def test_add_recommendation_invalid_score(site_name, refresh_tables, engine):
         site_published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(
-        strategy=StrategyType.POPULARITY, strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE
-    )
-    recommendation = Recommendation(execution=execution, target_article=article, score=1.1)
+    recommender = Recommender(strategy="example-strategy", recommendation_type=RecommendationType.DEFAULT_AKA_NO_SOURCE)
+    recommendation = Recommendation(recommender=recommender, target_article=article, score=1.1)
 
     with Session(engine) as session:
         session.add(recommendation)
@@ -322,21 +316,21 @@ def test_add_recommendations_duplicate(site_name, refresh_tables, engine):
         site_published_at=datetime.utcnow(),
         page=page,
     )
-    execution = Execution(
-        strategy=StrategyType.POPULARITY,
-        strategy_recommendation_type=StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE,
+    recommender = Recommender(
+        strategy="example-strategy",
+        recommendation_type=RecommendationType.DEFAULT_AKA_NO_SOURCE,
     )
-    recommendation1 = Recommendation(execution=execution, target_article=article, score=0.8)
-    recommendation2 = Recommendation(execution=execution, target_article=article, score=0.8)
+    recommendation1 = Recommendation(recommender=recommender, target_article=article, score=0.8)
+    recommendation2 = Recommendation(recommender=recommender, target_article=article, score=0.8)
 
     with Session(engine) as session:
         session.add(recommendation1)
         session.add(recommendation2)
 
-        # Since the combination of execution and target_article is unique, adding a recommendation with an already existing execution and target_article must fail
+        # Since the combination of recommender and target_article is unique, adding a recommendation with an already existing recommender and target_article must fail
         with pytest.raises(
             IntegrityError,
-            match=r"duplicate key value violates unique constraint \"recommendation_execution_target_unique\"",
+            match=r"duplicate key value violates unique constraint \"recommendation_recommender_target_unique\"",
         ):
             session.commit()
 
@@ -374,13 +368,13 @@ def test_delete_recommendation(site_name, refresh_tables, engine):
         page=page2,
     )
 
-    execution = Execution(
-        strategy=StrategyType.SEMANTIC_SIMILARITY,
-        strategy_recommendation_type=StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
+    recommender = Recommender(
+        strategy="example-strategy",
+        recommendation_type=RecommendationType.SOURCE_TARGET_INTERCHANGEABLE,
     )
-    embedding1 = Embedding(article=article1, execution=execution, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
-    embedding2 = Embedding(article=article2, execution=execution, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)
-    recommendation = Recommendation(execution=execution, source_article=article1, target_article=article2, score=0.9)
+    embedding1 = Embedding(article=article1, recommender=recommender, vector=[0.1] * MAX_EMBEDDING_DIMENSIONS)
+    embedding2 = Embedding(article=article2, recommender=recommender, vector=[0.4] * MAX_EMBEDDING_DIMENSIONS)
+    recommendation = Recommendation(recommender=recommender, source_article=article1, target_article=article2, score=0.9)
 
     with Session(engine) as session:
         session.add(embedding1)
@@ -391,7 +385,7 @@ def test_delete_recommendation(site_name, refresh_tables, engine):
         # Check that everything is written
         assert session.exec(select(func.count(Page.id))).one() == 2
         assert session.exec(select(func.count(Article.page_id))).one() == 2
-        assert session.exec(select(func.count(Execution.id))).one() == 1
+        assert session.exec(select(func.count(Recommender.id))).one() == 1
         assert session.exec(select(func.count(Embedding.id))).one() == 2
         assert session.exec(select(func.count(Recommendation.id))).one() == 1
         assert len(article1.recommendations_where_this_is_source) == 1
@@ -411,8 +405,8 @@ def test_delete_recommendation(site_name, refresh_tables, engine):
         assert article1.recommendations_where_this_is_source == []
         assert article2.recommendations_where_this_is_target == []
 
-        # Check executions
-        assert session.exec(select(func.count(Execution.id))).one() == 1
+        # Check recommenders
+        assert session.exec(select(func.count(Recommender.id))).one() == 1
 
         # Check embeddings
         assert session.exec(select(func.count(Embedding.id))).one() == 2

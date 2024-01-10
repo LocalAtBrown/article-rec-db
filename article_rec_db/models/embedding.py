@@ -13,7 +13,7 @@ MAX_EMBEDDING_DIMENSIONS = 384
 
 class Embedding(AutoUUIDPrimaryKey, CreationTracked, table=True):
     article_id: UUID = Field(foreign_key="article.page_id")
-    execution_id: UUID = Field(foreign_key="execution.id")
+    recommender_id: UUID = Field(foreign_key="recommender.id")
     vector: list[float] = Field(sa_type=Vector(MAX_EMBEDDING_DIMENSIONS))
 
     # An embedding always corresonds to an article
