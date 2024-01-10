@@ -5,27 +5,24 @@ from sqlmodel import Relationship
 from .helpers import AutoUUIDPrimaryKey, CreationTracked
 
 
-class StrategyType(StrEnum):
-    POPULARITY = "popularity"
-    COLLABORATIVE_FILTERING_ITEM_BASED = "collaborative_filtering_item_based"
-    SEMANTIC_SIMILARITY = "semantic_similarity"
-
-
-class StrategyRecommendationType(StrEnum):
+class RecommendationType(StrEnum):
     DEFAULT_AKA_NO_SOURCE = "default_aka_no_source"
     SOURCE_TARGET_INTERCHANGEABLE = "source_target_interchangeable"  # This is where either S -> T or T -> S is saved to save space, since one recommendation goes both ways
     SOURCE_TARGET_NOT_INTERCHANGEABLE = "source_target_not_interchangeable"
 
 
-class Execution(AutoUUIDPrimaryKey, CreationTracked, table=True):
+class Recommender(AutoUUIDPrimaryKey, CreationTracked, table=True):
     """
-    Log of training job task executions, each with respect to a single strategy.
+    Log of used recommenders.
     """
 
-    strategy: StrategyType
-    strategy_recommendation_type: StrategyRecommendationType
+    # Name of the recommendation strategy (e.g., semantic similarity, item-based collaborative filtering)
+    strategy: str
 
-    # An execution has multiple embeddings
+    # Type of recommendation
+    recommendation_type: RecommendationType
+
+    # A recommender can produce multiple embeddings
     embeddings: list["Embedding"] = Relationship(  # type: ignore
         back_populates="execution",
         sa_relationship_kwargs={
@@ -33,8 +30,7 @@ class Execution(AutoUUIDPrimaryKey, CreationTracked, table=True):
             "cascade": "all, delete-orphan"
         },
     )
-    # An execution can produce zero (if it doesn't have a default strategy, such as popularity)
-    # or multiple default recommendations (if it has a default strategy)
+    # A recommender can produce multiple recommendations
     recommendations: list["Recommendation"] = Relationship(  # type: ignore
         back_populates="execution",
         sa_relationship_kwargs={

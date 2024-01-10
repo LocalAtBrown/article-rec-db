@@ -5,8 +5,8 @@ from sqlalchemy import event
 from sqlmodel import CheckConstraint, Field, Relationship, UniqueConstraint
 
 from .article import Article
-from .execution import Execution, StrategyRecommendationType
 from .helpers import AutoUUIDPrimaryKey, CreationTracked
+from .recommender import RecommendationType, Recommender
 
 
 class Recommendation(AutoUUIDPrimaryKey, CreationTracked, table=True):
@@ -33,7 +33,7 @@ class Recommendation(AutoUUIDPrimaryKey, CreationTracked, table=True):
     )
 
     # A recommendation always corresponds to a task execution
-    execution: Execution = Relationship(back_populates="recommendations")
+    recommender: Recommender = Relationship(back_populates="recommendations")
 
     # A default recommendation always corresponds to a target article, but not necessarily to a source article
     # The sa_relationship_kwargs is here to avert the AmbiguousForeignKeyError, see: https://github.com/tiangolo/sqlmodel/issues/10#issuecomment-1537445078
@@ -51,7 +51,7 @@ class Recommendation(AutoUUIDPrimaryKey, CreationTracked, table=True):
 def validate_source_id_lower_then_target_id_when_interchangeable(
     mapper: Any, connection: Any, target: Recommendation
 ) -> None:
-    if target.execution.strategy_recommendation_type == StrategyRecommendationType.SOURCE_TARGET_INTERCHANGEABLE:
+    if target.recommender.recommendation_type == RecommendationType.SOURCE_TARGET_INTERCHANGEABLE:
         assert (
             target.source_article_id is not None
         ), "Source article ID must be non-null when source and target are interchangeable."
@@ -63,7 +63,7 @@ def validate_source_id_lower_then_target_id_when_interchangeable(
 
 @event.listens_for(Recommendation, "before_insert")
 def validate_source_id_empty_when_strategy_default(mapper: Any, connection: Any, target: Recommendation) -> None:
-    if target.execution.strategy_recommendation_type == StrategyRecommendationType.DEFAULT_AKA_NO_SOURCE:
+    if target.recommender.recommendation_type == RecommendationType.DEFAULT_AKA_NO_SOURCE:
         assert (
             target.source_article_id is None
         ), f"Source article ID must be empty when execution strategy's recommendation type is default."
