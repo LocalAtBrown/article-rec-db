@@ -2,7 +2,7 @@ from typing import Any
 from uuid import UUID
 
 from sqlalchemy import event
-from sqlmodel import CheckConstraint, Field, Relationship, UniqueConstraint
+from sqlmodel import Field, Relationship, UniqueConstraint
 
 from .article import Article
 from .helpers import AutoUUIDPrimaryKey, CreationTracked
@@ -28,9 +28,7 @@ class Recommendation(AutoUUIDPrimaryKey, CreationTracked, table=True):
     target_article_id: UUID = Field(foreign_key="article.page_id")
 
     # Recommendation score, between 0 and 1. Top recs should have higher scores
-    score: float = Field(
-        sa_column_args=[CheckConstraint("score >= 0 AND score <= 1", name="recommendation_score_between_0_and_1")]
-    )
+    score: float
 
     # A recommendation always corresponds to the recommender that creates it
     recommender: Recommender = Relationship(back_populates="recommendations")
