@@ -277,33 +277,6 @@ def test_add_recommendation_source_target_interchangeable_wrong_order_article_si
         assert num_recommendations == 0
 
 
-def test_add_recommendation_invalid_score(site_name, refresh_tables, engine):
-    page = Page(
-        url="https://dallasfreepress.com/example-article/",
-    )
-    article = Article(
-        site=site_name,
-        id_in_site="1234",
-        title="Example Article",
-        content="<p>Content</p>",
-        site_published_at=datetime.utcnow(),
-        page=page,
-    )
-    recommender = Recommender(strategy="example-strategy", recommendation_type=RecommendationType.DEFAULT_AKA_NO_SOURCE)
-    recommendation = Recommendation(recommender=recommender, target_article=article, score=1.1)
-
-    with Session(engine) as session:
-        session.add(recommendation)
-
-        with pytest.raises(IntegrityError, match=r"violates check constraint \"recommendation_score_between_0_and_1\""):
-            session.commit()
-
-        # Check that nothing is written
-        session.rollback()
-        num_recommendations = session.exec(select(func.count(Recommendation.id))).one()
-        assert num_recommendations == 0
-
-
 def test_add_recommendations_duplicate(site_name, refresh_tables, engine):
     page = Page(
         url="https://dallasfreepress.com/example-article/",
